@@ -1,36 +1,53 @@
-# [Project name]
+# ATLAS BI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Dashboard comercial da NIADCON — centro de comando de vendas com ranking, metas, cadastros e gráficos de produção.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/atlas-bi run dev` — frontend React/Vite (porta configurada via `PORT`)
+- `pnpm --filter @workspace/api-server run dev` — servidor Express da API
+- `pnpm run typecheck` — typecheck completo de todos os pacotes
+- `pnpm run build` — typecheck + build
+- `pnpm --filter @workspace/api-spec run codegen` — regenerar hooks e schemas Zod a partir do spec OpenAPI
+- `pnpm --filter @workspace/db run push` — aplicar mudanças no schema do banco (dev only)
+- Required env: `DATABASE_URL` — string de conexão PostgreSQL; `SESSION_SECRET` — segredo para tokens de auth
+
+## Credenciais padrão
+
+- **Email:** admin@niadcon.com.br
+- **Senha:** atlas2024
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React 18, Vite, Tailwind CSS, Recharts, Framer Motion, wouter
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
+- Validação: Zod (zod/v4), drizzle-zod
+- Codegen de API: Orval (spec OpenAPI)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/atlas-bi/src/pages/` — páginas do dashboard (login, dashboard, ranking, consultants, sales, goals)
+- `artifacts/atlas-bi/src/components/auth-provider.tsx` — contexto de autenticação + setAuthTokenGetter
+- `artifacts/atlas-bi/src/components/layout/shell.tsx` — sidebar e layout principal
+- `artifacts/api-server/src/routes/` — rotas da API (auth, consultants, sales, goals, dashboard)
+- `lib/api-spec/openapi.yaml` — especificação OpenAPI (source of truth)
+- `lib/db/src/schema/` — schema Drizzle (users, consultants, sales, goals)
+
+## Cores da marca
+
+- Azul escuro: #0A1F44 (sidebar, fundo principal)
+- Laranja: #F47920 (destaque, CTAs, badges)
+- Branco: #FFFFFF
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Auth por token Bearer (localStorage `atlas_token`) + `setAuthTokenGetter` registrado na inicialização do app
+- Senhas com SHA-256 + salt estático (adequado para demo; produção deve usar bcrypt)
+- Tokens em memória no servidor (Map); produção deve usar Redis/DB sessions
+- Dashboard summary/ranking/chart são endpoints dedicados agregados no servidor, nunca no cliente
 
 ## User preferences
 
@@ -38,8 +55,6 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Após qualquer mudança no `lib/api-spec/openapi.yaml`, rodar `pnpm --filter @workspace/api-spec run codegen` E depois `pnpm run typecheck:libs`
+- O servidor precisa de `DATABASE_URL` e `SESSION_SECRET` no ambiente
+- Tokens de auth ficam em memória; reiniciar o servidor faz todos os usuários precisarem logar novamente

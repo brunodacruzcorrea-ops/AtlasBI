@@ -3,20 +3,29 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: ATLAS BI - Commercial Dashboard API for NIADCON
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: consultants
+    description: Consultant management
+  - name: sales
+    description: Sales management
+  - name: goals
+    description: Commercial goals management
+  - name: dashboard
+    description: Dashboard aggregates and rankings
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +33,420 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Authenticate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /consultants:
+    get:
+      operationId: listConsultants
+      tags: [consultants]
+      summary: List all consultants
+      responses:
+        "200":
+          description: List of consultants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Consultant"
+    post:
+      operationId: createConsultant
+      tags: [consultants]
+      summary: Create a new consultant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsultantInput"
+      responses:
+        "201":
+          description: Consultant created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consultant"
+
+  /consultants/{id}:
+    get:
+      operationId: getConsultant
+      tags: [consultants]
+      summary: Get a consultant by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Consultant found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consultant"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateConsultant
+      tags: [consultants]
+      summary: Update a consultant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsultantUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consultant"
+    delete:
+      operationId: deleteConsultant
+      tags: [consultants]
+      summary: Delete a consultant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /sales:
+    get:
+      operationId: listSales
+      tags: [sales]
+      summary: List all sales
+      parameters:
+        - name: consultantId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: month
+          in: query
+          schema:
+            type: ["integer", "null"]
+          description: "Month number 1-12"
+        - name: year
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of sales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sale"
+    post:
+      operationId: createSale
+      tags: [sales]
+      summary: Register a new sale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleInput"
+      responses:
+        "201":
+          description: Sale created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+
+  /sales/{id}:
+    get:
+      operationId: getSale
+      tags: [sales]
+      summary: Get a sale by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sale found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+    patch:
+      operationId: updateSale
+      tags: [sales]
+      summary: Update a sale
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+    delete:
+      operationId: deleteSale
+      tags: [sales]
+      summary: Delete a sale
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /goals:
+    get:
+      operationId: listGoals
+      tags: [goals]
+      summary: List commercial goals
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: year
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of goals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Goal"
+    post:
+      operationId: createGoal
+      tags: [goals]
+      summary: Create or update a commercial goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoalInput"
+      responses:
+        "201":
+          description: Goal created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+
+  /goals/{id}:
+    patch:
+      operationId: updateGoal
+      tags: [goals]
+      summary: Update a goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoalUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+    delete:
+      operationId: deleteGoal
+      tags: [goals]
+      summary: Delete a goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary KPIs
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: year
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/ranking:
+    get:
+      operationId: getDashboardRanking
+      tags: [dashboard]
+      summary: Get sales ranking by consultant
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: year
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: limit
+          in: query
+          schema:
+            type: ["integer", "null"]
+          description: "Top N consultants to return"
+      responses:
+        "200":
+          description: Ranked consultants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RankingEntry"
+
+  /dashboard/production-chart:
+    get:
+      operationId: getProductionChart
+      tags: [dashboard]
+      summary: Get monthly production data for charts
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Production chart data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyProduction"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +457,321 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - role
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required:
+        - user
+        - token
+
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    Consultant:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        region:
+          type: ["string", "null"]
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - active
+        - createdAt
+
+    ConsultantInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        region:
+          type: string
+        active:
+          type: boolean
+      required:
+        - name
+        - email
+
+    ConsultantUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        region:
+          type: string
+        active:
+          type: boolean
+
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+        consultantId:
+          type: integer
+        consultantName:
+          type: ["string", "null"]
+        product:
+          type: string
+        amount:
+          type: number
+        quantity:
+          type: integer
+        saleDate:
+          type: string
+          format: date
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - consultantId
+        - product
+        - amount
+        - quantity
+        - saleDate
+        - createdAt
+
+    SaleInput:
+      type: object
+      properties:
+        consultantId:
+          type: integer
+        product:
+          type: string
+          minLength: 1
+        amount:
+          type: number
+        quantity:
+          type: integer
+        saleDate:
+          type: string
+          format: date
+        notes:
+          type: string
+      required:
+        - consultantId
+        - product
+        - amount
+        - quantity
+        - saleDate
+
+    SaleUpdate:
+      type: object
+      properties:
+        consultantId:
+          type: integer
+        product:
+          type: string
+        amount:
+          type: number
+        quantity:
+          type: integer
+        saleDate:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: integer
+        consultantId:
+          type: ["integer", "null"]
+        consultantName:
+          type: ["string", "null"]
+        month:
+          type: integer
+        year:
+          type: integer
+        targetAmount:
+          type: number
+        targetQuantity:
+          type: ["integer", "null"]
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - month
+        - year
+        - targetAmount
+        - createdAt
+
+    GoalInput:
+      type: object
+      properties:
+        consultantId:
+          type: integer
+        month:
+          type: integer
+        year:
+          type: integer
+        targetAmount:
+          type: number
+        targetQuantity:
+          type: integer
+        description:
+          type: string
+      required:
+        - month
+        - year
+        - targetAmount
+
+    GoalUpdate:
+      type: object
+      properties:
+        targetAmount:
+          type: number
+        targetQuantity:
+          type: integer
+        description:
+          type: string
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalSales:
+          type: number
+        totalQuantity:
+          type: integer
+        totalConsultants:
+          type: integer
+        activeConsultants:
+          type: integer
+        goalAmount:
+          type: number
+        goalAchievementPercent:
+          type: number
+        topConsultantName:
+          type: ["string", "null"]
+        topConsultantAmount:
+          type: ["number", "null"]
+        previousMonthSales:
+          type: ["number", "null"]
+        growthPercent:
+          type: ["number", "null"]
+      required:
+        - totalSales
+        - totalQuantity
+        - totalConsultants
+        - activeConsultants
+        - goalAmount
+        - goalAchievementPercent
+
+    RankingEntry:
+      type: object
+      properties:
+        position:
+          type: integer
+        consultantId:
+          type: integer
+        consultantName:
+          type: string
+        totalAmount:
+          type: number
+        totalQuantity:
+          type: integer
+        goalAmount:
+          type: ["number", "null"]
+        goalAchievementPercent:
+          type: ["number", "null"]
+      required:
+        - position
+        - consultantId
+        - consultantName
+        - totalAmount
+        - totalQuantity
+
+    MonthlyProduction:
+      type: object
+      properties:
+        month:
+          type: integer
+        monthName:
+          type: string
+        totalAmount:
+          type: number
+        totalQuantity:
+          type: integer
+        goalAmount:
+          type: ["number", "null"]
+      required:
+        - month
+        - monthName
+        - totalAmount
+        - totalQuantity

@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "ATLAS BI"
+version = "1.0.0"
+id = "artifacts/atlas-bi"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19869
+
+[services.development]
+run = "pnpm --filter @workspace/atlas-bi run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/atlas-bi", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/atlas-bi/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19869"
+BASE_PATH = "/"
