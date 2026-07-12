@@ -6,6 +6,7 @@ export const salesTable = pgTable("sales", {
   id: serial("id").primaryKey(),
   consultantId: integer("consultant_id").notNull(),
   product: text("product").notNull(),
+  segment: text("segment").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   quantity: integer("quantity").notNull().default(1),
   saleDate: date("sale_date", { mode: "string" }).notNull(),

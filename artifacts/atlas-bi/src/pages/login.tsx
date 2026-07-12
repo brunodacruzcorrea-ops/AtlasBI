@@ -26,7 +26,7 @@ export default function Login() {
           setLocation("/dashboard");
         },
         onError: (err: any) => {
-          setErrorMsg(err.message || "Invalid credentials");
+          setErrorMsg(err.message || "Usuário ou senha inválidos");
         }
       }
     );
@@ -51,23 +51,35 @@ export default function Login() {
             <span className="text-sidebar-primary"><Map className="w-10 h-10" /></span>
             <span>ATLAS <span className="text-sidebar-primary">BI</span></span>
           </div>
-          <span className="text-sm font-semibold tracking-[0.3em] text-sidebar-foreground/50">NIADCON COMMAND CENTER</span>
+          <span className="text-sm font-semibold tracking-[0.3em] text-sidebar-foreground/50">
+            <span className="text-sm font-semibold tracking-[0.3em] text-sidebar-foreground/50">
+              CENTRAL DE COMANDO NIADCON
+            </span>
+
+            <p className="text-xs text-sidebar-foreground/40 mt-2 text-center">
+              Faça login para acessar o painel de gestão comercial.
+            </p>
+          </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70">Email Access</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70">
+              E-mail
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full bg-sidebar-border/50 border border-sidebar-border text-sidebar-foreground px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sidebar-primary focus:border-transparent transition-all placeholder:text-sidebar-foreground/30"
-              placeholder="consultant@niadcon.com.br"
+              placeholder="usuario@niadcon.com.br"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70">Security Key</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70">
+              Senha
+            </label>
             <input
               type="password"
               value={password}
@@ -89,7 +101,7 @@ export default function Login() {
             disabled={loginMutation.isPending}
             className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-sidebar-primary-foreground font-bold px-4 py-3.5 rounded-lg flex items-center justify-center gap-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed group mt-4 shadow-[0_0_20px_rgba(244,121,32,0.3)] hover:shadow-[0_0_25px_rgba(244,121,32,0.5)]"
           >
-            {loginMutation.isPending ? "AUTHENTICATING..." : "ENTER COMMAND CENTER"}
+            {loginMutation.isPending ? "AUTENTICANDO..." : "ENTRAR NO SISTEMA"}
             {!loginMutation.isPending && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
           </button>
         </form>

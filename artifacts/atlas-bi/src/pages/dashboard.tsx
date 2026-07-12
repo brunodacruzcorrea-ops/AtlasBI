@@ -3,21 +3,27 @@ import { formatBRL, formatNumber, formatPercent, cn } from "@/lib/utils";
 import { TrendingUp, Users, Target, Activity, Medal, Trophy } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ComposedChart, Line } from 'recharts';
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function Dashboard() {
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().getMonth() + 1
+  );
 
-  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({ month: currentMonth, year: currentYear }, {
-    query: { queryKey: getGetDashboardSummaryQueryKey({ month: currentMonth, year: currentYear }) }
+  const [selectedYear, setSelectedYear] = useState(
+    new Date().getFullYear()
+  );
+
+  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({ month: selectedMonth, year: selectedYear }, {
+    query: { queryKey: getGetDashboardSummaryQueryKey({ month: selectedMonth, year: selectedYear }) }
   });
 
-  const { data: ranking, isLoading: loadingRanking } = useGetDashboardRanking({ month: currentMonth, year: currentYear, limit: 10 }, {
-    query: { queryKey: getGetDashboardRankingQueryKey({ month: currentMonth, year: currentYear, limit: 10 }) }
+  const { data: ranking, isLoading: loadingRanking } = useGetDashboardRanking({ month: selectedMonth, year: selectedYear, limit: 10 }, {
+    query: { queryKey: getGetDashboardRankingQueryKey({ month: selectedMonth, year: selectedYear, limit: 10 }) }
   });
 
-  const { data: chartData, isLoading: loadingChart } = useGetProductionChart({ year: currentYear }, {
-    query: { queryKey: getGetProductionChartQueryKey({ year: currentYear }) }
+  const { data: chartData, isLoading: loadingChart } = useGetProductionChart({ year: selectedYear }, {
+    query: { queryKey: getGetProductionChartQueryKey({ year: selectedYear }) }
   });
 
   const isLoading = loadingSummary || loadingRanking || loadingChart;
@@ -49,13 +55,55 @@ export default function Dashboard() {
     top3[0] || null,
     top3[2] || null
   ];
-
+  const MONTH_NAMES = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
   return (
     <div className="flex flex-col gap-8 pb-10">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">Command Center</h1>
-          <p className="text-muted-foreground font-medium mt-1">Real-time commercial performance for {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}</p>
+          <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
+            Central de Comando
+          </h1>
+          <div className="flex gap-3 mt-4">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="rounded-lg border px-3 py-2"
+            >
+              {MONTH_NAMES.map((month, index) => (
+                <option key={index} value={index + 1}>
+                  {month}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="rounded-lg border px-3 py-2"
+            >
+              {[2024, 2025, 2026, 2027].map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="text-muted-foreground font-medium mt-1">
+            Desempenho comercial em tempo real - {MONTH_NAMES[selectedMonth - 1]} de {selectedYear}
+          </p>
         </div>
       </div>
 
@@ -67,12 +115,12 @@ export default function Dashboard() {
       >
         <div className="flex justify-between items-end mb-4 relative z-10">
           <div>
-            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Monthly Goal</p>
+            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Meta Mensal</p>
             <p className="text-3xl font-black text-foreground">{formatBRL(summary.goalAmount)}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Achieved</p>
-            <p className="text-3xl font-black text-accent">{formatPercent(summary.goalAchievementPercent * 100)}</p>
+            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Atingido</p>
+            <p className="text-3xl font-black text-accent">{formatPercent(summary.goalAchievementPercent)}</p>
           </div>
         </div>
         <div className="h-4 bg-muted rounded-full overflow-hidden relative z-10">
@@ -90,27 +138,27 @@ export default function Dashboard() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <SummaryCard 
-          title="Total Sales" 
+          title="Total Vendido" 
           value={formatBRL(summary.totalSales)} 
           icon={TrendingUp} 
           trend={summary.growthPercent ? `${summary.growthPercent > 0 ? '+' : ''}${summary.growthPercent.toFixed(1)}%` : undefined}
           delay={0.1}
         />
         <SummaryCard 
-          title="Quantity Sold" 
+          title="Quantidade Vendida" 
           value={formatNumber(summary.totalQuantity)} 
           icon={Activity} 
           delay={0.2}
         />
         <SummaryCard 
-          title="Active Consultants" 
+          title="Consultores Ativos" 
           value={summary.activeConsultants.toString()} 
-          subtitle={`of ${summary.totalConsultants} total`}
+          subtitle={`de ${summary.totalConsultants} no total`}
           icon={Users} 
           delay={0.3}
         />
         <SummaryCard 
-          title="Top Performer" 
+          title="Destaque do Mês" 
           value={summary.topConsultantName || "N/A"} 
           subtitle={summary.topConsultantAmount ? formatBRL(summary.topConsultantAmount) : undefined}
           icon={Trophy} 
@@ -127,7 +175,7 @@ export default function Dashboard() {
           transition={{ delay: 0.5 }}
           className="lg:col-span-2 bg-card rounded-xl border border-card-border p-6 shadow-sm"
         >
-          <h2 className="text-lg font-bold uppercase tracking-wider text-foreground mb-6">Production vs Goal</h2>
+          <h2 className="text-lg font-bold uppercase tracking-wider text-foreground mb-6">Produção x Meta</h2>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
@@ -139,8 +187,8 @@ export default function Dashboard() {
                   contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--card-border))', fontWeight: 600, color: 'hsl(var(--foreground))' }}
                   formatter={(value: number) => formatBRL(value)}
                 />
-                <Bar yAxisId="left" dataKey="totalAmount" name="Production" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={50} />
-                <Line yAxisId="left" type="monotone" dataKey="goalAmount" name="Goal" stroke="hsl(var(--chart-3))" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                <Bar yAxisId="left" dataKey="totalAmount" name="Produção" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                <Line yAxisId="left" type="monotone" dataKey="goalAmount" name="Meta" stroke="hsl(var(--chart-3))" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -155,7 +203,7 @@ export default function Dashboard() {
             transition={{ delay: 0.6 }}
             className="bg-card rounded-xl border border-card-border p-6 shadow-sm pt-8"
           >
-            <h2 className="text-center text-sm font-bold uppercase tracking-widest text-muted-foreground mb-12">Top 3 Consultants</h2>
+            <h2 className="text-center text-sm font-bold uppercase tracking-widest text-muted-foreground mb-12">Top 3 Consultores</h2>
             <div className="flex items-end justify-center gap-2 h-48">
               {/* 2nd Place */}
               {podiumOrder[0] && (
@@ -181,7 +229,7 @@ export default function Dashboard() {
               className="bg-card rounded-xl border border-card-border shadow-sm overflow-hidden"
             >
               <div className="p-4 border-b border-card-border bg-muted/30">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Follow-up Ranking</h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Ranking Geral</h3>
               </div>
               <div className="divide-y border-card-border">
                 {restRanking.map((entry) => (
@@ -192,7 +240,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold text-foreground">{formatBRL(entry.totalAmount)}</div>
-                      <div className="text-xs font-medium text-accent">{formatPercent((entry.goalAchievementPercent || 0) * 100)}</div>
+                      <div className="text-xs font-medium text-accent">{formatPercent((entry.goalAchievementPercent || 0))}</div>
                     </div>
                   </div>
                 ))}
@@ -205,8 +253,10 @@ export default function Dashboard() {
   );
 }
 
-function SummaryCard({ title, value, subtitle, icon: Icon, trend, highlight, delay }: any) {
-  return (
+    function SummaryCard({ title, value, subtitle, icon: Icon, trend, highlight, delay }: any) {
+      const isNegative = trend?.startsWith("-");
+
+      return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -229,7 +279,13 @@ function SummaryCard({ title, value, subtitle, icon: Icon, trend, highlight, del
         <p className="text-3xl font-black truncate">{value}</p>
         <div className="flex items-center gap-2 mt-1">
           {trend && (
-            <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+      <span 
+                className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                  isNegative
+                    ? "text-red-500 bg-red-500/10"
+                    : "text-emerald-500 bg-emerald-500/10"
+                }`}
+              >
               {trend}
             </span>
           )}

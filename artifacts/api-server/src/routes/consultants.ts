@@ -21,15 +21,22 @@ function mapConsultant(c: any) {
     id: c.id,
     name: c.name,
     email: c.email,
-    phone: c.phone ?? null,
-    region: c.region ?? null,
+    photo: c.photo ?? null,
+    role: c.role ?? null,
+    team: c.team ?? null,
     active: c.active,
-    createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : String(c.createdAt),
+    createdAt:
+      c.createdAt instanceof Date
+        ? c.createdAt.toISOString()
+        : String(c.createdAt),
   };
 }
 
 router.get("/consultants", ensureAuth, async (_req, res): Promise<void> => {
-  const consultants = await db.select().from(consultantsTable).orderBy(consultantsTable.name);
+  const consultants = await db
+    .select()
+    .from(consultantsTable)
+    .orderBy(consultantsTable.name);
   res.json(ListConsultantsResponse.parse(consultants.map(mapConsultant)));
 });
 
@@ -45,13 +52,15 @@ router.post("/consultants", ensureAuth, async (req, res): Promise<void> => {
     .values({
       name: parsed.data.name,
       email: parsed.data.email,
-      phone: parsed.data.phone ?? null,
-      region: parsed.data.region ?? null,
+      role: parsed.data.role ?? null,
+      team: parsed.data.team ?? null,
       active: parsed.data.active ?? true,
     })
     .returning();
 
-  res.status(201).json(CreateConsultantResponse.parse(mapConsultant(consultant)));
+  res
+    .status(201)
+    .json(CreateConsultantResponse.parse(mapConsultant(consultant)));
 });
 
 router.get("/consultants/:id", ensureAuth, async (req, res): Promise<void> => {
@@ -74,58 +83,68 @@ router.get("/consultants/:id", ensureAuth, async (req, res): Promise<void> => {
   res.json(GetConsultantResponse.parse(mapConsultant(consultant)));
 });
 
-router.patch("/consultants/:id", ensureAuth, async (req, res): Promise<void> => {
-  const params = UpdateConsultantParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
+router.patch(
+  "/consultants/:id",
+  ensureAuth,
+  async (req, res): Promise<void> => {
+    const params = UpdateConsultantParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
 
-  const parsed = UpdateConsultantBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+    const parsed = UpdateConsultantBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
 
-  const updateData: Record<string, any> = {};
-  if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-  if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
-  if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
-  if (parsed.data.region !== undefined) updateData.region = parsed.data.region;
-  if (parsed.data.active !== undefined) updateData.active = parsed.data.active;
+    const updateData: Record<string, any> = {};
+    if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
+    if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
+    if (parsed.data.role !== undefined) updateData.role = parsed.data.role;
 
-  const [consultant] = await db
-    .update(consultantsTable)
-    .set(updateData)
-    .where(eq(consultantsTable.id, params.data.id))
-    .returning();
+    if (parsed.data.team !== undefined) updateData.team = parsed.data.team;
+    if (parsed.data.active !== undefined)
+      updateData.active = parsed.data.active;
 
-  if (!consultant) {
-    res.status(404).json({ error: "Consultor não encontrado" });
-    return;
-  }
+    const [consultant] = await db
+      .update(consultantsTable)
+      .set(updateData)
+      .where(eq(consultantsTable.id, params.data.id))
+      .returning();
 
-  res.json(UpdateConsultantResponse.parse(mapConsultant(consultant)));
-});
+    if (!consultant) {
+      res.status(404).json({ error: "Consultor não encontrado" });
+      return;
+    }
 
-router.delete("/consultants/:id", ensureAuth, async (req, res): Promise<void> => {
-  const params = DeleteConsultantParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
+    res.json(UpdateConsultantResponse.parse(mapConsultant(consultant)));
+  },
+);
 
-  const [deleted] = await db
-    .delete(consultantsTable)
-    .where(eq(consultantsTable.id, params.data.id))
-    .returning();
+router.delete(
+  "/consultants/:id",
+  ensureAuth,
+  async (req, res): Promise<void> => {
+    const params = DeleteConsultantParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
 
-  if (!deleted) {
-    res.status(404).json({ error: "Consultor não encontrado" });
-    return;
-  }
+    const [deleted] = await db
+      .delete(consultantsTable)
+      .where(eq(consultantsTable.id, params.data.id))
+      .returning();
 
-  res.json({ success: true });
-});
+    if (!deleted) {
+      res.status(404).json({ error: "Consultor não encontrado" });
+      return;
+    }
+
+    res.json({ success: true });
+  },
+);
 
 export default router;
