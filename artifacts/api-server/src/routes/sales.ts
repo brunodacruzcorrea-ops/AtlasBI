@@ -14,6 +14,7 @@ import {
   ListSalesQueryParams,
 } from "@workspace/api-zod";
 import { ensureAuth } from "./auth";
+import { toDatabaseDate } from "./sale-date";
 
 const router: IRouter = Router();
 
@@ -91,7 +92,7 @@ router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
       segment: parsed.data.segment,
       amount: String(parsed.data.amount),
       quantity: parsed.data.quantity,
-      saleDate: String(parsed.data.saleDate),
+      saleDate: toDatabaseDate(parsed.data.saleDate),
       notes: parsed.data.notes ?? null,
     })
     .returning();
@@ -155,7 +156,7 @@ router.patch("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
   if (parsed.data.quantity !== undefined)
     updateData.quantity = parsed.data.quantity;
   if (parsed.data.saleDate !== undefined)
-    updateData.saleDate = String(parsed.data.saleDate);
+    updateData.saleDate = toDatabaseDate(parsed.data.saleDate);
   if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
 
   const [sale] = await db
