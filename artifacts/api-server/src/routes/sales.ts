@@ -27,7 +27,10 @@ function mapSale(s: any, consultantName?: string | null) {
     quantity: s.quantity,
     saleDate: s.saleDate,
     notes: s.notes ?? null,
-    createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : String(s.createdAt),
+    createdAt:
+      s.createdAt instanceof Date
+        ? s.createdAt.toISOString()
+        : String(s.createdAt),
   };
 }
 
@@ -45,10 +48,14 @@ router.get("/sales", ensureAuth, async (req, res): Promise<void> => {
     conditions.push(eq(salesTable.consultantId, consultantId));
   }
   if (month != null) {
-    conditions.push(sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date) = ${month}`);
+    conditions.push(
+      sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date) = ${month}`,
+    );
   }
   if (year != null) {
-    conditions.push(sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`);
+    conditions.push(
+      sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`,
+    );
   }
 
   const salesRows = await db
@@ -57,7 +64,10 @@ router.get("/sales", ensureAuth, async (req, res): Promise<void> => {
       consultantName: consultantsTable.name,
     })
     .from(salesTable)
-    .leftJoin(consultantsTable, eq(salesTable.consultantId, consultantsTable.id))
+    .leftJoin(
+      consultantsTable,
+      eq(salesTable.consultantId, consultantsTable.id),
+    )
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(sql`${salesTable.saleDate} DESC`);
 
@@ -66,6 +76,8 @@ router.get("/sales", ensureAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
+  console.log("BODY RECEBIDO:", req.body);
+
   const parsed = CreateSaleBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -89,7 +101,9 @@ router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
     .from(consultantsTable)
     .where(eq(consultantsTable.id, sale.consultantId));
 
-  res.status(201).json(CreateSaleResponse.parse(mapSale(sale, consultant?.name)));
+  res
+    .status(201)
+    .json(CreateSaleResponse.parse(mapSale(sale, consultant?.name)));
 });
 
 router.get("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
@@ -102,7 +116,10 @@ router.get("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
   const [row] = await db
     .select({ sale: salesTable, consultantName: consultantsTable.name })
     .from(salesTable)
-    .leftJoin(consultantsTable, eq(salesTable.consultantId, consultantsTable.id))
+    .leftJoin(
+      consultantsTable,
+      eq(salesTable.consultantId, consultantsTable.id),
+    )
     .where(eq(salesTable.id, params.data.id));
 
   if (!row) {
@@ -127,11 +144,16 @@ router.patch("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
   }
 
   const updateData: Record<string, any> = {};
-  if (parsed.data.consultantId !== undefined) updateData.consultantId = parsed.data.consultantId;
-  if (parsed.data.product !== undefined) updateData.product = parsed.data.product;
-  if (parsed.data.amount !== undefined) updateData.amount = String(parsed.data.amount);
-  if (parsed.data.quantity !== undefined) updateData.quantity = parsed.data.quantity;
-  if (parsed.data.saleDate !== undefined) updateData.saleDate = String(parsed.data.saleDate);
+  if (parsed.data.consultantId !== undefined)
+    updateData.consultantId = parsed.data.consultantId;
+  if (parsed.data.product !== undefined)
+    updateData.product = parsed.data.product;
+  if (parsed.data.amount !== undefined)
+    updateData.amount = String(parsed.data.amount);
+  if (parsed.data.quantity !== undefined)
+    updateData.quantity = parsed.data.quantity;
+  if (parsed.data.saleDate !== undefined)
+    updateData.saleDate = String(parsed.data.saleDate);
   if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
 
   const [sale] = await db
