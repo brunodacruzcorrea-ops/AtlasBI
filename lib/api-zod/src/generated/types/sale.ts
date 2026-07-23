@@ -12,6 +12,7 @@ export interface Sale {
   /** @nullable */
   consultantName?: string | null;
   product: string;
+  segment: string;
   amount: number;
   quantity: number;
   saleDate: Date;

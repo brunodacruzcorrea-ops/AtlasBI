@@ -11,9 +11,11 @@ export interface Consultant {
   name: string;
   email: string;
   /** @nullable */
-  phone?: string | null;
+  photo?: string | null;
   /** @nullable */
-  region?: string | null;
+  role?: string | null;
+  /** @nullable */
+  team?: string | null;
   active: boolean;
   createdAt: Date;
 }

@@ -23,6 +23,7 @@ function mapSale(s: any, consultantName?: string | null) {
     consultantId: s.consultantId,
     consultantName: consultantName ?? null,
     product: s.product,
+    segment: s.segment,
     amount: parseFloat(s.amount),
     quantity: s.quantity,
     saleDate: s.saleDate,
@@ -76,8 +77,6 @@ router.get("/sales", ensureAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
-  console.log("BODY RECEBIDO:", req.body);
-
   const parsed = CreateSaleBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -89,6 +88,7 @@ router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
     .values({
       consultantId: parsed.data.consultantId,
       product: parsed.data.product,
+      segment: parsed.data.segment,
       amount: String(parsed.data.amount),
       quantity: parsed.data.quantity,
       saleDate: String(parsed.data.saleDate),
@@ -148,6 +148,8 @@ router.patch("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
     updateData.consultantId = parsed.data.consultantId;
   if (parsed.data.product !== undefined)
     updateData.product = parsed.data.product;
+  if (parsed.data.segment !== undefined)
+    updateData.segment = parsed.data.segment;
   if (parsed.data.amount !== undefined)
     updateData.amount = String(parsed.data.amount);
   if (parsed.data.quantity !== undefined)

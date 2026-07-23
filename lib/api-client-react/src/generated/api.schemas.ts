@@ -39,9 +39,11 @@ export interface Consultant {
   name: string;
   email: string;
   /** @nullable */
-  phone?: string | null;
+  photo?: string | null;
   /** @nullable */
-  region?: string | null;
+  role?: string | null;
+  /** @nullable */
+  team?: string | null;
   active: boolean;
   createdAt: string;
 }
@@ -50,16 +52,16 @@ export interface ConsultantInput {
   /** @minLength 1 */
   name: string;
   email: string;
-  phone?: string;
-  region?: string;
+  role?: string;
+  team?: string;
   active?: boolean;
 }
 
 export interface ConsultantUpdate {
   name?: string;
   email?: string;
-  phone?: string;
-  region?: string;
+  role?: string;
+  team?: string;
   active?: boolean;
 }
 
@@ -69,6 +71,7 @@ export interface Sale {
   /** @nullable */
   consultantName?: string | null;
   product: string;
+  segment: string;
   amount: number;
   quantity: number;
   saleDate: string;
@@ -81,6 +84,8 @@ export interface SaleInput {
   consultantId: number;
   /** @minLength 1 */
   product: string;
+  /** @minLength 1 */
+  segment: string;
   amount: number;
   quantity: number;
   saleDate: string;
@@ -90,6 +95,7 @@ export interface SaleInput {
 export interface SaleUpdate {
   consultantId?: number;
   product?: string;
+  segment?: string;
   amount?: number;
   quantity?: number;
   saleDate?: string;

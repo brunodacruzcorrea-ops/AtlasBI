@@ -10,6 +10,8 @@ export interface SaleInput {
   consultantId: number;
   /** @minLength 1 */
   product: string;
+  /** @minLength 1 */
+  segment: string;
   amount: number;
   quantity: number;
   saleDate: Date;

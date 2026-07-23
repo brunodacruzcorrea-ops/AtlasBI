@@ -63,6 +63,7 @@ import { formatBRL, formatNumber } from "@/lib/utils";
 const saleSchema = z.object({
   consultantId: z.coerce.number().min(1, "Consultant is required"),
   product: z.string().min(1, "Product name is required"),
+  segment: z.string().min(1, "Segment is required"),
   amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
   saleDate: z.string().min(1, "Date is required"),
@@ -116,6 +117,7 @@ export default function Sales() {
     defaultValues: {
       consultantId: 0,
       product: "",
+      segment: "",
       amount: 0,
       quantity: 1,
       saleDate: new Date().toISOString().split("T")[0],
@@ -131,8 +133,6 @@ export default function Sales() {
   );
 
   const onSubmit = (values: z.infer<typeof saleSchema>) => {
-    console.log("BOTÃO FUNCIONOU", values);
-
     const data = {
       ...values,
       saleDate: values.saleDate,
@@ -161,6 +161,14 @@ export default function Sales() {
             toast({ title: "Sale updated successfully" });
             handleCloseDialog();
           },
+          onError: () => {
+            toast({
+              title: "Não foi possível atualizar a venda",
+              description:
+                "Revise os dados informados e tente novamente. Se o problema continuar, contate o suporte.",
+              variant: "destructive",
+            });
+          },
         },
       );
     } else {
@@ -186,6 +194,14 @@ export default function Sales() {
             toast({ title: "Sale registered successfully" });
             handleCloseDialog();
           },
+          onError: () => {
+            toast({
+              title: "Não foi possível registrar a venda",
+              description:
+                "Revise os dados informados e tente novamente. Se o problema continuar, contate o suporte.",
+              variant: "destructive",
+            });
+          },
         },
       );
     }
@@ -195,6 +211,7 @@ export default function Sales() {
     form.reset({
       consultantId: sale.consultantId,
       product: sale.product,
+      segment: sale.segment,
       amount: sale.amount,
       quantity: sale.quantity,
       saleDate: new Date(sale.saleDate).toISOString().split("T")[0],
@@ -231,6 +248,7 @@ export default function Sales() {
     form.reset({
       consultantId: 0,
       product: "",
+      segment: "",
       amount: 0,
       quantity: 1,
       saleDate: new Date().toISOString().split("T")[0],
@@ -332,6 +350,26 @@ export default function Sales() {
                       <FormControl>
                         <Input
                           placeholder="Enterprise Plan"
+                          {...field}
+                          className="bg-muted/50 focus-visible:ring-primary"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="segment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase text-muted-foreground">
+                        Segment
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enterprise"
                           {...field}
                           className="bg-muted/50 focus-visible:ring-primary"
                         />

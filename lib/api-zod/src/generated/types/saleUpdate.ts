@@ -9,6 +9,7 @@
 export interface SaleUpdate {
   consultantId?: number;
   product?: string;
+  segment?: string;
   amount?: number;
   quantity?: number;
   saleDate?: Date;
