@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "../auth-provider";
 import { useLogout } from "@workspace/api-client-react";
-import { LayoutDashboard, Trophy, Users, BarChart3, Target, LogOut, Map } from "lucide-react";
+import { LayoutDashboard, Trophy, Users, BarChart3, Target, LogOut, Map, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -13,11 +13,17 @@ const NAV_ITEMS = [
   { href: "/goals", label: "Goals", icon: Target },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { href: "/users", label: "Usuários", icon: UserCog },
+];
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const queryClient = useQueryClient();
+
+  const navItems = user?.role === "admin" ? [...NAV_ITEMS, ...ADMIN_NAV_ITEMS] : NAV_ITEMS;
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -31,7 +37,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen w-full flex bg-background">
-      {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border z-20">
         <div className="p-6 flex flex-col gap-1 items-center justify-center border-b border-sidebar-border/50">
           <div className="flex items-center gap-2 text-2xl font-black tracking-wider">
@@ -42,7 +47,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
 
         <nav className="flex-1 py-6 flex flex-col gap-2 px-3 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = location === item.href || (location.startsWith(item.href) && item.href !== "/");
             return (
               <Link key={item.href} href={item.href} className={cn(
@@ -79,7 +84,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 pl-64 flex flex-col min-w-0 overflow-hidden">
         <div className="flex-1 p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto w-full">
