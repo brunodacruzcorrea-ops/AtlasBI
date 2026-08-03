@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
-import { Map, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 
@@ -34,7 +34,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-sidebar relative overflow-hidden">
-      {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary rounded-full blur-[100px]" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-accent rounded-full blur-[120px]" />
@@ -47,10 +46,7 @@ export default function Login() {
         className="w-full max-w-md p-8 bg-sidebar-border/30 backdrop-blur-xl border border-sidebar-border rounded-2xl shadow-2xl z-10"
       >
         <div className="flex flex-col items-center justify-center mb-10">
-          <div className="flex items-center gap-3 text-4xl font-black tracking-wider text-sidebar-foreground mb-2">
-            <span className="text-sidebar-primary"><Map className="w-10 h-10" /></span>
-            <span>ATLAS <span className="text-sidebar-primary">BI</span></span>
-          </div>
+          <img src="/niadcon-logo.png" alt="Niadcon" className="h-16 w-auto mb-3" />
           <span className="text-sm font-semibold tracking-[0.3em] text-sidebar-foreground/50">
             <span className="text-sm font-semibold tracking-[0.3em] text-sidebar-foreground/50">
               CENTRAL DE COMANDO NIADCON

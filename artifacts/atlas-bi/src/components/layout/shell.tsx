@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "../auth-provider";
 import { useLogout } from "@workspace/api-client-react";
-import { LayoutDashboard, Trophy, Users, BarChart3, Target, LogOut, Map, UserCog } from "lucide-react";
+import { LayoutDashboard, Trophy, Users, BarChart3, Target, LogOut, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -39,10 +39,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen w-full flex bg-background">
       <aside className="fixed inset-y-0 left-0 w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border z-20">
         <div className="p-6 flex flex-col gap-1 items-center justify-center border-b border-sidebar-border/50">
-          <div className="flex items-center gap-2 text-2xl font-black tracking-wider">
-            <span className="text-sidebar-primary"><Map className="w-8 h-8" /></span>
-            <span>ATLAS <span className="text-sidebar-primary">BI</span></span>
-          </div>
+          <img src="/niadcon-logo.png" alt="Niadcon" className="h-10 w-auto mb-1" />
           <span className="text-xs font-semibold tracking-widest text-sidebar-foreground/50">NIADCON</span>
         </div>
 
