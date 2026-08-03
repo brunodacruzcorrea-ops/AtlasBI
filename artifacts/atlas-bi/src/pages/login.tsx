@@ -46,7 +46,7 @@ export default function Login() {
         className="w-full max-w-md p-8 bg-sidebar-border/30 backdrop-blur-xl border border-sidebar-border rounded-2xl shadow-2xl z-10"
       >
         <div className="flex flex-col items-center justify-center mb-10">
-          <img src="/niadcon-logo.png" alt="Niadcon" className="h-16 w-auto mb-3" />
+          <img src="/niadcon-logo.png" alt="Niadcon" className="h-24 w-auto mb-3" />
           <span className="text-sm font-semibold tracking-[0.3em] text-sidebar-foreground/50">
             <span className="text-sm font-semibold tracking-[0.3em] text-sidebar-foreground/50">
               CENTRAL DE COMANDO NIADCON

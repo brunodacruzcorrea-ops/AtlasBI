@@ -39,7 +39,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen w-full flex bg-background">
       <aside className="fixed inset-y-0 left-0 w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border z-20">
         <div className="p-6 flex flex-col gap-1 items-center justify-center border-b border-sidebar-border/50">
-          <img src="/niadcon-logo.png" alt="Niadcon" className="h-10 w-auto mb-1" />
+          <img src="/niadcon-logo.png" alt="Niadcon" className="h-14 w-auto mb-1" />
           <span className="text-xs font-semibold tracking-widest text-sidebar-foreground/50">NIADCON</span>
         </div>
 
