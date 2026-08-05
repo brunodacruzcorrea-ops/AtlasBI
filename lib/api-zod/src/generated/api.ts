@@ -79,6 +79,7 @@ export const ListConsultantsResponse = zod.array(ListConsultantsResponseItem)
 export const CreateConsultantBody = zod.object({
   "name": zod.string().min(1),
   "email": zod.string().email(),
+  "photo": zod.string().nullish(),
   "role": zod.string().optional(),
   "team": zod.string().optional(),
   "active": zod.boolean().optional()
@@ -125,6 +126,7 @@ export const UpdateConsultantParams = zod.object({
 export const UpdateConsultantBody = zod.object({
   "name": zod.string().optional(),
   "email": zod.string().optional(),
+  "photo": zod.string().nullish(),
   "role": zod.string().optional(),
   "team": zod.string().optional(),
   "active": zod.boolean().optional()
@@ -393,6 +395,7 @@ export const GetDashboardRankingResponseItem = zod.object({
   "position": zod.number(),
   "consultantId": zod.number(),
   "consultantName": zod.string(),
+  "photo": zod.string().nullish(),
   "totalAmount": zod.number(),
   "totalQuantity": zod.number(),
   "goalAmount": zod.number().nullish(),

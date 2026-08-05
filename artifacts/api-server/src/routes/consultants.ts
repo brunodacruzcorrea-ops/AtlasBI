@@ -52,6 +52,7 @@ router.post("/consultants", ensureAuth, async (req, res): Promise<void> => {
     .values({
       name: parsed.data.name,
       email: parsed.data.email,
+      photo: parsed.data.photo ?? null,
       role: parsed.data.role ?? null,
       team: parsed.data.team ?? null,
       active: parsed.data.active ?? true,
@@ -102,6 +103,7 @@ router.patch(
     const updateData: Record<string, any> = {};
     if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
     if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
+    if (parsed.data.photo !== undefined) updateData.photo = parsed.data.photo;
     if (parsed.data.role !== undefined) updateData.role = parsed.data.role;
 
     if (parsed.data.team !== undefined) updateData.team = parsed.data.team;

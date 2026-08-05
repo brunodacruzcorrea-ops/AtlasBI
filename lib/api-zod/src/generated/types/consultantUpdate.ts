@@ -9,6 +9,7 @@
 export interface ConsultantUpdate {
   name?: string;
   email?: string;
+  photo?: string;
   role?: string;
   team?: string;
   active?: boolean;

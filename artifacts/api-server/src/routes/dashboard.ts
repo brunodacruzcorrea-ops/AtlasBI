@@ -94,6 +94,7 @@ router.get("/dashboard/summary", ensureAuth, async (req, res): Promise<void> => 
     .select({
       consultantId: salesTable.consultantId,
       consultantName: consultantsTable.name,
+      photo: consultantsTable.photo,
       totalAmount: sql<string>`SUM(${salesTable.amount})`,
     })
     .from(salesTable)
@@ -142,6 +143,7 @@ router.get("/dashboard/ranking", ensureAuth, async (req, res): Promise<void> => 
     .select({
       consultantId: salesTable.consultantId,
       consultantName: consultantsTable.name,
+      photo: consultantsTable.photo,
       totalAmount: sql<string>`SUM(${salesTable.amount})`,
       totalQuantity: sql<string>`SUM(${salesTable.quantity})`,
     })
@@ -186,6 +188,7 @@ router.get("/dashboard/ranking", ensureAuth, async (req, res): Promise<void> => 
       position: index + 1,
       consultantId: r.consultantId,
       consultantName: r.consultantName ?? `Consultor #${r.consultantId}`,
+      photo: r.photo ?? null,
       totalAmount,
       totalQuantity: parseInt(r.totalQuantity),
       goalAmount,

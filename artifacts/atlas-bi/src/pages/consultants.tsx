@@ -56,12 +56,13 @@ const consultantSchema = z.object({
   email: z.string().email("E-mail inválido"),
   team: z.string().min(1, "Equipe obrigatória"),
   role: z.string().min(1, "Cargo obrigatório"),
+  photo: z.string().optional(),
   active: z.boolean().default(true),
 });
 
 export default function Consultants() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterActive, setFilterActive] = useState<
+  const [filterActive, setFilterActive] = useState
     "all" | "active" | "inactive"
   >("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -74,8 +75,6 @@ export default function Consultants() {
     query: { queryKey: getListConsultantsQueryKey() },
   });
 
-  console.log("CONSULTORES:", consultants);
-
   const createMutation = useCreateConsultant();
   const updateMutation = useUpdateConsultant();
   const deleteMutation = useDeleteConsultant();
@@ -87,6 +86,7 @@ export default function Consultants() {
       email: "",
       team: "",
       role: "",
+      photo: "",
       active: true,
     },
   });
@@ -105,11 +105,7 @@ export default function Consultants() {
   });
 
   const onSubmit = (values: z.infer<typeof consultantSchema>) => {
-    console.log("SUBMIT DISPAROU");
-    console.log(values);
-
     if (editingId) {
-      // ...
       updateMutation.mutate(
         { id: editingId, data: values },
         {
@@ -145,6 +141,7 @@ export default function Consultants() {
       email: consultant.email,
       team: consultant.team || "",
       role: consultant.role || "",
+      photo: consultant.photo || "",
       active: consultant.active,
     });
     setIsCreateOpen(true);
@@ -176,6 +173,7 @@ export default function Consultants() {
       email: "",
       team: "",
       role: "",
+      photo: "",
       active: true,
     });
   };
@@ -247,6 +245,25 @@ export default function Consultants() {
                         <Input
                           placeholder="john@niadcon.com.br"
                           type="email"
+                          {...field}
+                          className="bg-muted/50 focus-visible:ring-primary"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="photo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase text-muted-foreground">
+                        Foto (link da imagem)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://i.postimg.cc/.../foto.png"
                           {...field}
                           className="bg-muted/50 focus-visible:ring-primary"
                         />
@@ -403,9 +420,17 @@ export default function Consultants() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-sidebar-accent flex items-center justify-center font-bold text-sidebar-primary border border-sidebar-primary/20">
-                          {consultant.name?.charAt(0)?.toUpperCase() ?? "?"}
-                        </div>
+                        {consultant.photo ? (
+                          <img
+                            src={consultant.photo}
+                            alt={consultant.name}
+                            className="w-10 h-10 rounded-full object-cover border border-sidebar-primary/20"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-sidebar-accent flex items-center justify-center font-bold text-sidebar-primary border border-sidebar-primary/20">
+                            {consultant.name?.charAt(0)?.toUpperCase() ?? "?"}
+                          </div>
+                        )}
                         <div>
                           <div className="font-bold text-foreground">
                             {consultant.name}
