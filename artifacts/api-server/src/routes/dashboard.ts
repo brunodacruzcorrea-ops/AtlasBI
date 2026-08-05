@@ -105,7 +105,7 @@ router.get("/dashboard/summary", ensureAuth, async (req, res): Promise<void> => 
         sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`
       )
     )
-    .groupBy(salesTable.consultantId, consultantsTable.name)
+    .groupBy(salesTable.consultantId, consultantsTable.name, consultantsTable.photo)
     .orderBy(desc(sql`SUM(${salesTable.amount})`))
     .limit(1);
 
@@ -155,7 +155,7 @@ router.get("/dashboard/ranking", ensureAuth, async (req, res): Promise<void> => 
         sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`
       )
     )
-    .groupBy(salesTable.consultantId, consultantsTable.name)
+    .groupBy(salesTable.consultantId, consultantsTable.name, consultantsTable.photo)
     .orderBy(desc(sql`SUM(${salesTable.amount})`))
     .limit(limit);
 
