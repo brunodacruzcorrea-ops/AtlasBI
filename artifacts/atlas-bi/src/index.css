@@ -415,3 +415,62 @@
     color-scheme: dark;
   }
 }
+
+
+/* REAL-TIME SALE CELEBRATION */
+.sale-firework-layer {
+  position: fixed;
+  top: 22%;
+  left: 50%;
+  z-index: 100;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.sale-firework-core {
+  position: absolute;
+  left: -26px;
+  top: -26px;
+  display: flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.94);
+  box-shadow: 0 0 0 8px hsl(var(--accent) / 0.12), 0 18px 45px -18px hsl(var(--accent));
+  animation: sale-core-pop 1.45s ease-out forwards;
+}
+
+.sale-firework-particle {
+  --angle: 0deg;
+  --distance: 90px;
+  --delay: 0ms;
+  position: absolute;
+  width: 7px;
+  height: 12px;
+  border-radius: 999px;
+  opacity: 0;
+  transform: rotate(var(--angle)) translateY(0) scale(0.5);
+  animation: sale-particle-burst 1.35s cubic-bezier(.16,.8,.25,1) var(--delay) forwards;
+}
+
+@keyframes sale-core-pop {
+  0% { opacity: 0; transform: scale(0.25) rotate(-12deg); }
+  18% { opacity: 1; transform: scale(1.08) rotate(5deg); }
+  70% { opacity: 1; transform: scale(0.92) rotate(0); }
+  100% { opacity: 0; transform: scale(0.72) translateY(-18px); }
+}
+
+@keyframes sale-particle-burst {
+  0% { opacity: 0; transform: rotate(var(--angle)) translateY(0) scale(0.35); }
+  15% { opacity: 1; }
+  72% { opacity: 0.95; }
+  100% { opacity: 0; transform: rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sale-firework-particle { display: none; }
+  .sale-firework-core { animation-duration: 500ms; }
+}
