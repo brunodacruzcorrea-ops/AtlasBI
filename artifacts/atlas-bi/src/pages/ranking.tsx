@@ -111,13 +111,21 @@ export default function Ranking() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className={cn(
-                            "w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm",
+                            "relative w-10 h-10 shrink-0 rounded-full overflow-hidden flex items-center justify-center font-bold text-white shadow-sm",
                             isFirst ? "bg-[hsl(var(--chart-4))]" :
                             isSecond ? "bg-[hsl(var(--chart-5))]" :
                             isThird ? "bg-[#CD7F32]" :
                             "bg-primary"
                           )}>
                             {entry.consultantName.charAt(0).toUpperCase()}
+                            {entry.photo && (
+                              <img
+                                src={entry.photo}
+                                alt={entry.consultantName}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                onError={(event) => event.currentTarget.remove()}
+                              />
+                            )}
                           </div>
                           <div>
                             <div className={cn(
