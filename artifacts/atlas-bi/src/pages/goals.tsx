@@ -163,15 +163,15 @@ export default function Goals() {
 
   return (
     <div className="flex flex-col gap-6 lg:gap-8 pb-10">
-      <div className="premium-glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-5">
+      <div className="premium-glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row itens-start md:items-end justify-between gap-5">
         <div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.035em] text-foreground uppercase">Metas Comerciais</h1>
           <p className="text-muted-foreground font-medium mt-1">Set targets and define expectations</p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3 bg-card border border-card-border p-1.5 rounded-lg shadow-sm mr-2">
-            <div className="flex items-center gap-2 px-2 border-r border-card-border">
+        <div className="flex itens-center gap-3">
+          <div className="flex itens-center gap-3 bg-card border border-card-border p-1.5 rounded-lg shadow-sm mr-2">
+            <div className="flex itens-center gap-2 px-2 border-r border-card-border">
               <CalendarIcon className="w-4 h-4 text-muted-foreground" />
               <select 
                 value={month} 
@@ -343,18 +343,18 @@ export default function Goals() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-        {/* Team Goals Column */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 itens-start">
+        {/* Metas Globais Column */}
         <div className="xl:col-span-1 flex flex-col gap-6">
-          <h2 className="text-xl font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+          <h2 className="text-xl font-bold uppercase tracking-wider text-foreground flex itens-center gap-2">
             <Users className="w-5 h-5 text-accent" />
-            Team Goals
+            Metas Globais
           </h2>
           
           {isLoading ? (
             <div className="h-48 bg-muted animate-pulse rounded-xl" />
           ) : teamGoals.length === 0 ? (
-            <div className="bg-card border border-card-border border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center">
+            <div className="bg-card border border-card-border border-dashed rounded-xl p-8 flex flex-col itens-center justify-center text-center">
               <Target className="w-10 h-10 text-muted-foreground/30 mb-3" />
               <p className="text-sm font-bold text-muted-foreground">No team goals set for this month</p>
             </div>
@@ -366,14 +366,14 @@ export default function Goals() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-primary text-primary-foreground rounded-xl p-6 shadow-md relative overflow-hidden group"
+                  className="rounded-2xl border border-orange-400/30 bg-[linear-gradient(135deg,#fb7a1b,#e85a0c)] p-6 text-white shadow-[0_24px_50px_-28px_rgba(234,88,12,0.8)] relative overflow-hidden group transition-all hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(234,88,12,0.9)]"
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
                   
-                  <div className="flex justify-between items-start mb-6">
+                  <div className="flex justify-between itens-start mb-6">
                     <div>
-                      <h3 className="font-bold text-lg uppercase tracking-wide">Global Target</h3>
-                      {goal.description && <p className="text-xs text-primary-foreground/70 mt-1">{goal.description}</p>}
+                      <h3 className="font-bold text-lg uppercase tracking-wide">Meta Global</h3>
+                      {goal.description && <p className="text-xs text-white/75 mt-1">{goal.description}</p>}
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => handleEdit(goal)} className="p-1.5 hover:bg-white/20 rounded-md transition-colors"><Edit2 className="w-4 h-4" /></button>
@@ -382,14 +382,14 @@ export default function Goals() {
                   </div>
                   
                   <div>
-                    <div className="text-sm font-bold uppercase tracking-widest text-primary-foreground/50 mb-1">Revenue Goal</div>
-                    <div className="text-4xl font-black text-accent drop-shadow-sm">{formatBRL(goal.targetAmount)}</div>
+                    <div className="text-sm font-bold uppercase tracking-widest text-white/70 mb-1">Meta de Faturamento</div>
+                    <div className="text-4xl font-black text-white drop-shadow-[0_2px_8px_rgba(120,40,0,0.35)]">{formatBRL(goal.targetAmount)}</div>
                   </div>
                   
                   {goal.targetQuantity && (
-                    <div className="mt-4 pt-4 border-t border-primary-foreground/10 flex justify-between items-center">
-                      <span className="text-xs font-bold uppercase tracking-widest text-primary-foreground/50">Volume Target</span>
-                      <span className="font-bold text-lg">{goal.targetQuantity} items</span>
+                    <div className="mt-4 pt-4 border-t border-white/20 flex justify-between itens-center">
+                      <span className="text-xs font-bold uppercase tracking-widest text-white/70">Meta de Volume</span>
+                      <span className="font-bold text-lg">{goal.targetQuantity} itens</span>
                     </div>
                   )}
                 </motion.div>
@@ -400,7 +400,7 @@ export default function Goals() {
 
         {/* Individual Goals Column */}
         <div className="xl:col-span-2 flex flex-col gap-6">
-          <h2 className="text-xl font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+          <h2 className="text-xl font-bold uppercase tracking-wider text-foreground flex itens-center gap-2">
             <Target className="w-5 h-5 text-accent" />
             Individual Goals
           </h2>
@@ -408,7 +408,7 @@ export default function Goals() {
           {isLoading ? (
             <div className="h-[400px] bg-muted animate-pulse rounded-xl" />
           ) : individualGoals.length === 0 ? (
-            <div className="bg-card border border-card-border border-dashed rounded-xl p-12 flex flex-col items-center justify-center text-center">
+            <div className="bg-card border border-card-border border-dashed rounded-xl p-12 flex flex-col itens-center justify-center text-center">
               <Users className="w-12 h-12 text-muted-foreground/30 mb-4" />
               <p className="text-lg font-bold text-foreground">No individual goals</p>
               <p className="text-sm text-muted-foreground mt-1">Set specific targets for your consultants this month.</p>
@@ -452,7 +452,7 @@ export default function Goals() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex itens-center justify-end gap-2">
                             <Button variant="ghost" size="icon" onClick={() => handleEdit(goal)} className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
                               <Edit2 className="w-4 h-4" />
                             </Button>
