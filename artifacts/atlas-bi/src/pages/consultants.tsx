@@ -610,7 +610,7 @@ export default function Consultants() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEdit(consultant)
+                          onClick={() => handleEdit(consultant)}
                           className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
                         >
                           <Edit2 className="w-4 h-4" />
