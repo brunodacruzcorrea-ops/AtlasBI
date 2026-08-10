@@ -166,10 +166,10 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 pb-10">
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+    <div className="flex flex-col gap-6 lg:gap-8 pb-10">
+      <div className="premium-glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-5">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.035em] text-foreground uppercase">
             Usuários
           </h1>
           <p className="text-muted-foreground font-medium mt-1">
@@ -272,7 +272,7 @@ export default function UsersPage() {
         </Dialog>
       </div>
 
-      <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden flex flex-col">
+      <div className="premium-card rounded-2xl overflow-hidden flex flex-col">
         {isLoading ? (
           <div className="p-8 flex justify-center">
             <div className="w-8 h-8 rounded-full border-4 border-primary border-t-accent animate-spin" />
