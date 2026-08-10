@@ -272,11 +272,11 @@ export default function Sales() {
   ];
 
   return (
-    <div className="flex flex-col gap-8 pb-10">
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+    <div className="flex flex-col gap-6 lg:gap-8 pb-10">
+      <div className="premium-glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-5">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
-            Sales Ledger
+          <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.035em] text-foreground uppercase">
+            Central de Vendas
           </h1>
           <p className="text-muted-foreground font-medium mt-1">
             Record and track commercial production
@@ -487,7 +487,7 @@ export default function Sales() {
         </Dialog>
       </div>
 
-      <div className="bg-card border border-card-border rounded-xl shadow-sm flex flex-col">
+      <div className="premium-card rounded-2xl flex flex-col">
         <div className="p-4 border-b border-card-border bg-muted/20 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex items-center gap-3 bg-background border border-border p-1.5 rounded-lg shadow-sm">
             <div className="flex items-center gap-2 px-2 border-r border-border">

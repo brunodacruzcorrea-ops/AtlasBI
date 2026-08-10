@@ -225,10 +225,10 @@ export default function Consultants() {
   };
 
   return (
-    <div className="flex flex-col gap-8 pb-10">
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+    <div className="flex flex-col gap-6 lg:gap-8 pb-10">
+      <div className="premium-glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-5">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.035em] text-foreground uppercase">
             Consultores
           </h1>
           <p className="text-muted-foreground font-medium mt-1">
@@ -442,7 +442,7 @@ export default function Consultants() {
         </Dialog>
       </div>
 
-      <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden flex flex-col">
+      <div className="premium-card rounded-2xl overflow-hidden flex flex-col">
         <div className="p-4 border-b border-card-border bg-muted/20 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative w-full sm:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
