@@ -33,12 +33,12 @@ export default function Dashboard() {
       <div className="w-full h-full flex flex-col gap-6 animate-pulse">
         <div className="h-10 w-64 bg-muted rounded-md mb-4" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-32 bg-muted rounded-xl" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="h-32 bg-muted rounded-2xl" />)}
         </div>
-        <div className="h-12 bg-muted rounded-xl" />
+        <div className="h-12 bg-muted rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-[400px] bg-muted rounded-xl" />
-          <div className="h-[400px] bg-muted rounded-xl" />
+          <div className="lg:col-span-2 h-[400px] bg-muted rounded-2xl" />
+          <div className="h-[400px] bg-muted rounded-2xl" />
         </div>
       </div>
     );
@@ -70,10 +70,10 @@ export default function Dashboard() {
     "Dezembro",
   ];
   return (
-    <div className="flex flex-col gap-8 pb-10">
-      <div className="flex items-end justify-between">
+    <div className="flex flex-col gap-6 lg:gap-8 pb-10">
+      <div className="premium-glass relative overflow-hidden flex flex-col lg:flex-row lg:items-end justify-between gap-5 rounded-3xl p-6 lg:p-8">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-[-0.04em] text-foreground uppercase text-balance">
             Central de Comando
           </h1>
           <div className="flex gap-3 mt-4">
@@ -111,7 +111,7 @@ export default function Dashboard() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-xl border border-card-border p-6 shadow-sm relative overflow-hidden"
+        className="bg-card rounded-2xl border border-card-border p-6 shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)] relative overflow-hidden"
       >
         <div className="flex justify-between items-end mb-4 relative z-10">
           <div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="lg:col-span-2 bg-card rounded-xl border border-card-border p-6 shadow-sm"
+          className="lg:col-span-2 bg-card rounded-2xl border border-card-border p-6 shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)]"
         >
           <h2 className="text-lg font-bold uppercase tracking-wider text-foreground mb-6">Produção x Meta</h2>
           <div className="h-[350px] w-full">
@@ -201,7 +201,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6 }}
-            className="bg-card rounded-xl border border-card-border p-6 shadow-sm pt-8"
+            className="bg-card rounded-2xl border border-card-border p-6 shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)] pt-8"
           >
             <h2 className="text-center text-sm font-bold uppercase tracking-widest text-muted-foreground mb-12">Top 3 Consultores</h2>
             <div className="flex items-end justify-center gap-2 h-48">
@@ -226,7 +226,7 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="bg-card rounded-xl border border-card-border shadow-sm overflow-hidden"
+              className="bg-card rounded-2xl border border-card-border shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)] overflow-hidden"
             >
               <div className="p-4 border-b border-card-border bg-muted/30">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Ranking Geral</h3>
@@ -273,7 +273,7 @@ export default function Dashboard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
       className={cn(
-        "rounded-xl border p-6 shadow-sm relative overflow-hidden flex flex-col justify-between",
+        "premium-card rounded-2xl border p-6 relative overflow-hidden flex flex-col justify-between",
         highlight ? "bg-primary text-primary-foreground border-primary" : "bg-card border-card-border text-card-foreground"
       )}
     >
@@ -330,7 +330,7 @@ function PodiumColumn({ rank, data, height, color, delay }: any) {
           )}
           <span
             className={cn(
-              "absolute bottom-0 right-0 w-4 h-4 rounded-full flex items-center justify-center text-white shadow-sm",
+              "absolute bottom-0 right-0 w-4 h-4 rounded-full flex items-center justify-center text-white shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)]",
               rank === 1 ? "bg-amber-500" : rank === 2 ? "bg-slate-400" : "bg-[#CD7F32]"
             )}
             title={`${rank}º COLOCADO`}
@@ -360,4 +360,5 @@ function PodiumColumn({ rank, data, height, color, delay }: any) {
     </motion.div>
   );
 }
+
 
