@@ -141,7 +141,7 @@ export default function Ranking() {
                                 }}
                               >
                                 <Medal className="w-3 h-3" />
-                                {isFirst ? "Gold" : isSecond ? "Silver" : "Bronze"} Medal
+                                {isFirst ? "1º COLOCADO" : isSecond ? "2º COLOCADO" : "3º COLOCADO"}
                               </div>
                             )}
                           </div>
@@ -188,3 +188,4 @@ export default function Ranking() {
     </div>
   );
 }
+

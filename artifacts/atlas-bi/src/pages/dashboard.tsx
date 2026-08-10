@@ -328,9 +328,28 @@ function PodiumColumn({ rank, data, height, color, delay }: any) {
               onError={(event) => event.currentTarget.remove()}
             />
           )}
+          <span
+            className={cn(
+              "absolute bottom-0 right-0 w-4 h-4 rounded-full flex items-center justify-center text-white shadow-sm",
+              rank === 1 ? "bg-amber-500" : rank === 2 ? "bg-slate-400" : "bg-[#CD7F32]"
+            )}
+            title={`${rank}º COLOCADO`}
+            aria-label={`${rank}º COLOCADO`}
+          >
+            <Medal className="w-3 h-3" aria-hidden="true" />
+          </span>
         </div>
         <div className="mt-2 text-center">
           <p className="text-xs font-bold text-foreground truncate w-full px-1">{data.consultantName.split(' ')[0]}</p>
+          <p
+            className={cn(
+              "text-[9px] font-black uppercase tracking-wide flex items-center justify-center gap-0.5",
+              rank === 1 ? "text-amber-500" : rank === 2 ? "text-slate-500" : "text-[#CD7F32]"
+            )}
+          >
+            <Medal className="w-2.5 h-2.5" aria-hidden="true" />
+            {rank}º COLOCADO
+          </p>
           <p className="text-[10px] font-bold text-muted-foreground">{formatBRL(data.totalAmount)}</p>
         </div>
       </div>
@@ -341,3 +360,4 @@ function PodiumColumn({ rank, data, height, color, delay }: any) {
     </motion.div>
   );
 }
+
