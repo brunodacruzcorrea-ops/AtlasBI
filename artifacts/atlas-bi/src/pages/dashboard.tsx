@@ -1,6 +1,6 @@
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetDashboardRanking, getGetDashboardRankingQueryKey, useGetProductionChart, getGetProductionChartQueryKey } from "@workspace/api-client-react";
 import { formatBRL, formatNumber, formatPercent, cn } from "@/lib/utils";
-import { TrendingUp, Users, Target, Activity, Medal, Trophy, WalletCards, ReceiptText, UserCheck } from "lucide-react";
+import { TrendingUp, Users, Target, Activity, Medal, Trophy, WalletCards, ReceiptText, UserCheck, ChartNoAxesCombined } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ComposedChart, Line } from 'recharts';
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -52,6 +52,21 @@ export default function Dashboard() {
   const averageTicket = summary.totalQuantity > 0 ? summary.totalSales / summary.totalQuantity : 0;
   const activeTeamPercent = summary.totalConsultants > 0
     ? (summary.activeConsultants / summary.totalConsultants) * 100
+    : 0;
+  const now = new Date();
+  const daysInSelectedMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+  const selectedPeriod = selectedYear * 100 + selectedMonth;
+  const currentPeriod = now.getFullYear() * 100 + now.getMonth() + 1;
+  const elapsedDays = selectedPeriod < currentPeriod
+    ? daysInSelectedMonth
+    : selectedPeriod === currentPeriod
+      ? now.getDate()
+      : 0;
+  const projectedClosing = elapsedDays > 0
+    ? (summary.totalSales / elapsedDays) * daysInSelectedMonth
+    : 0;
+  const projectedAchievement = summary.goalAmount > 0
+    ? (projectedClosing / summary.goalAmount) * 100
     : 0;
 
   // Podium order: 2nd, 1st, 3rd
@@ -173,13 +188,20 @@ export default function Dashboard() {
       </div>
 
       {/* Executive insights */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <ExecutiveInsight
           title="Restante para a meta"
           value={formatBRL(remainingToGoal)}
           description={remainingToGoal > 0 ? "Valor necessário para atingir a meta mensal" : "Meta mensal atingida"}
           icon={WalletCards}
           tone="accent"
+        />
+        <ExecutiveInsight
+          title="Projeção de fechamento"
+          value={formatBRL(projectedClosing)}
+          description={elapsedDays > 0 ? `${formatPercent(projectedAchievement)} da meta projetada` : "Aguardando início do período"}
+          icon={ChartNoAxesCombined}
+          tone="success"
         />
         <ExecutiveInsight
           title="Ticket médio"
