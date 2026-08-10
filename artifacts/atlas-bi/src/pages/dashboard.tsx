@@ -219,16 +219,26 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(300px,0.82fr)_minmax(0,2fr)] gap-6 items-start">
         {/* Production Chart */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="lg:col-span-2 bg-card rounded-2xl border border-card-border p-6 shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)]"
+          className="lg:order-2 premium-card rounded-3xl p-6 lg:p-7 transition-all hover:shadow-[0_28px_65px_-34px_rgba(10,31,68,0.5)]"
         >
-          <h2 className="text-lg font-bold uppercase tracking-wider text-foreground mb-6">Produção x Meta</h2>
-          <div className="h-[350px] w-full">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-accent">Visão executiva</p>
+              <h2 className="text-xl font-black uppercase tracking-wider text-foreground">Produção × Meta</h2>
+              <p className="text-xs text-muted-foreground mt-1">Evolução anual de faturamento e objetivos</p>
+            </div>
+            <div className="flex items-center gap-4 rounded-xl border border-card-border bg-muted/35 px-3 py-2 text-[10px] font-bold uppercase tracking-wider">
+              <span className="flex items-center gap-1.5 text-muted-foreground"><i className="h-2.5 w-2.5 rounded-sm bg-accent" /> Produção</span>
+              <span className="flex items-center gap-1.5 text-muted-foreground"><i className="h-0.5 w-4 bg-[hsl(var(--chart-3))]" /> Meta</span>
+            </div>
+          </div>
+          <div className="h-[390px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -236,7 +246,7 @@ export default function Dashboard() {
                 <YAxis yAxisId="left" tickFormatter={(value) => `R$ ${value / 1000}k`} axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: 600 }} dx={-10} />
                 <RechartsTooltip 
                   cursor={{ fill: 'hsl(var(--muted))' }}
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--card-border))', fontWeight: 600, color: 'hsl(var(--foreground))' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '16px', border: '1px solid hsl(var(--card-border))', fontWeight: 600, color: 'hsl(var(--foreground))' }}
                   formatter={(value: number) => formatBRL(value)}
                 />
                 <Bar yAxisId="left" dataKey="totalAmount" name="Produção" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={50} />
@@ -247,15 +257,18 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Podium & Ranking */}
-        <div className="flex flex-col gap-6">
+        <div className="lg:order-1 flex flex-col gap-6">
           {/* Podium */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6 }}
-            className="bg-card rounded-2xl border border-card-border p-6 shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)] pt-8"
+            className="premium-card rounded-3xl p-6 pt-7 overflow-hidden relative transition-all hover:shadow-[0_28px_65px_-34px_rgba(10,31,68,0.5)]"
           >
-            <h2 className="text-center text-sm font-bold uppercase tracking-widest text-muted-foreground mb-12">Top 3 Consultores</h2>
+            <div className="mb-12 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-accent">Performance do mês</p>
+              <h2 className="text-base font-black uppercase tracking-widest text-foreground mt-1">Top 3 Consultores</h2>
+            </div>
             <div className="flex items-end justify-center gap-2 h-48">
               {/* 2nd Place */}
               {podiumOrder[0] && (
@@ -278,9 +291,9 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="bg-card rounded-2xl border border-card-border shadow-[0_18px_45px_-30px_rgba(10,31,68,0.34)] overflow-hidden"
+              className="premium-card rounded-3xl overflow-hidden"
             >
-              <div className="p-4 border-b border-card-border bg-muted/30">
+              <div className="p-4 border-b border-card-border bg-gradient-to-r from-muted/55 to-transparent">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Ranking Geral</h3>
               </div>
               <div className="divide-y border-card-border">
