@@ -17,16 +17,16 @@ export default function Ranking() {
   );
 
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
   ];
 
   return (
-    <div className="flex flex-col gap-8 pb-10">
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+    <div className="flex flex-col gap-6 lg:gap-8 pb-10">
+      <div className="premium-glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-5">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">Sales Ranking</h1>
-          <p className="text-muted-foreground font-medium mt-1">Global consultant performance and standings</p>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.035em] text-foreground uppercase">Ranking de Vendas</h1>
+          <p className="text-muted-foreground font-medium mt-1">Desempenho geral e classificação dos consultores</p>
         </div>
         
         <div className="flex items-center gap-3 bg-card border border-card-border p-2 rounded-lg shadow-sm">
@@ -63,7 +63,7 @@ export default function Ranking() {
           <p className="text-muted-foreground mt-2">There is no sales data for the selected period.</p>
         </div>
       ) : (
-        <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
+        <div className="premium-card rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-bold tracking-wider">
