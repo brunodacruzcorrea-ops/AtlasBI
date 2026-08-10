@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useGetDashboardRanking, getGetDashboardRankingQueryKey } from "@workspace/api-client-react";
 import { formatBRL, formatPercent, cn } from "@/lib/utils";
-import { Trophy, Medal, Search, Filter } from "lucide-react";
+import { Trophy, Medal, Search, Filter, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Ranking() {
@@ -11,10 +11,21 @@ export default function Ranking() {
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
 
-  const { data: ranking, isLoading } = useGetDashboardRanking(
+  const { data: ranking, isLoading: loadingCurrent } = useGetDashboardRanking(
     { month, year, limit: 100 }, 
     { query: { queryKey: getGetDashboardRankingQueryKey({ month, year, limit: 100 }) } }
   );
+
+  const previousMonth = month === 1 ? 12 : month - 1;
+  const previousYear = month === 1 ? year - 1 : year;
+  const { data: previousRanking, isLoading: loadingPrevious } = useGetDashboardRanking(
+    { month: previousMonth, year: previousYear, limit: 100 },
+    { query: { queryKey: getGetDashboardRankingQueryKey({ month: previousMonth, year: previousYear, limit: 100 }) } }
+  );
+  const previousPositions = new Map(
+    (previousRanking || []).map((entry) => [entry.consultantId, entry.position])
+  );
+  const isLoading = loadingCurrent || loadingPrevious;
 
   const months = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -69,10 +80,11 @@ export default function Ranking() {
               <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-bold tracking-wider">
                 <tr>
                   <th className="px-6 py-4 rounded-tl-xl w-24 text-center">Pos</th>
-                  <th className="px-6 py-4">Consultant</th>
-                  <th className="px-6 py-4 text-right">Total Amount</th>
-                  <th className="px-6 py-4 text-center">Qty</th>
-                  <th className="px-6 py-4 text-right rounded-tr-xl">Goal Achieved</th>
+                  <th className="px-6 py-4">Consultor</th>
+                  <th className="px-6 py-4 text-center">Evolução</th>
+                  <th className="px-6 py-4 text-right">Total vendido</th>
+                  <th className="px-6 py-4 text-center">Quantidade</th>
+                  <th className="px-6 py-4 text-right rounded-tr-xl">Meta atingida</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-card-border">
@@ -81,6 +93,8 @@ export default function Ranking() {
                   const isSecond = entry.position === 2;
                   const isThird = entry.position === 3;
                   const isTop3 = isFirst || isSecond || isThird;
+                  const previousPosition = previousPositions.get(entry.consultantId);
+                  const positionChange = previousPosition == null ? null : previousPosition - entry.position;
                   
                   return (
                     <motion.tr 
@@ -147,6 +161,25 @@ export default function Ranking() {
                           </div>
                         </div>
                       </td>
+                      <td className="px-6 py-4 text-center">
+                        {positionChange == null ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
+                            <Minus className="w-3.5 h-3.5" /> Novo
+                          </span>
+                        ) : positionChange > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-600">
+                            <TrendingUp className="w-4 h-4" /> +{positionChange}
+                          </span>
+                        ) : positionChange < 0 ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-black text-red-500">
+                            <TrendingDown className="w-4 h-4" /> {positionChange}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
+                            <Minus className="w-3.5 h-3.5" /> 0
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <span className={cn(
                           "font-black text-lg font-mono",
@@ -156,7 +189,7 @@ export default function Ranking() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center font-medium text-muted-foreground">
-                        {entry.totalQuantity} items
+                        {entry.totalQuantity} itens
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex flex-col items-end gap-1">
