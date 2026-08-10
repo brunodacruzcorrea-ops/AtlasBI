@@ -15,6 +15,7 @@ import {
 } from "@workspace/api-zod";
 import { ensureAuth } from "./auth";
 import { toDatabaseDate } from "./sale-date";
+import { broadcastSaleCreated } from "./sales-events";
 
 const router: IRouter = Router();
 
@@ -102,9 +103,13 @@ router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
     .from(consultantsTable)
     .where(eq(consultantsTable.id, sale.consultantId));
 
-  res
-    .status(201)
-    .json(CreateSaleResponse.parse(mapSale(sale, consultant?.name)));
+  const createdSale = CreateSaleResponse.parse(mapSale(sale, consultant?.name));
+  broadcastSaleCreated({
+    ...createdSale,
+    consultantName: createdSale.consultantName ?? null,
+    notes: undefined,
+  } as any);
+  res.status(201).json(createdSale);
 });
 
 router.get("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
