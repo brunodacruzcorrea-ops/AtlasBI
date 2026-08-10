@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -77,12 +77,12 @@
   --elevate-1: rgba(0, 0, 0, 0.03);
   --elevate-2: rgba(0, 0, 0, 0.08);
 
-  --background: 220 33% 97%;
+  --background: 216 45% 98%;
   --foreground: 218 74% 15%;
   --border: 218 20% 90%;
   --card: 0 0% 100%;
   --card-foreground: 218 74% 15%;
-  --card-border: 218 20% 90%;
+  --card-border: 218 28% 91%;
 
   --sidebar: 218 74% 15%;
   --sidebar-foreground: 0 0% 100%;
@@ -116,10 +116,10 @@
   --chart-4: 43 100% 60%;
   --chart-5: 0 0% 70%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Manrope', 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  --radius: 0.5rem;
+  --radius: 0.85rem;
 
   --shadow-2xs: 0px 2px 0px 0px hsl(218 74% 15% / 0.05);
   --shadow-xs: 0px 2px 0px 0px hsl(218 74% 15% / 0.05);
@@ -284,3 +284,71 @@
     inset: -1px;
   }
 }
+
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-width: 320px;
+    background:
+      radial-gradient(circle at 8% 0%, hsl(var(--accent) / 0.08), transparent 26rem),
+      radial-gradient(circle at 100% 16%, hsl(var(--primary) / 0.06), transparent 30rem),
+      hsl(var(--background));
+  }
+
+  ::selection {
+    background: hsl(var(--accent) / 0.22);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  .premium-card {
+    border: 1px solid hsl(var(--card-border) / 0.9);
+    background: linear-gradient(145deg, hsl(var(--card) / 0.98), hsl(var(--card) / 0.9));
+    box-shadow:
+      0 1px 2px hsl(var(--foreground) / 0.03),
+      0 18px 45px -28px hsl(var(--foreground) / 0.28);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  .premium-card:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--accent) / 0.22);
+    box-shadow:
+      0 2px 4px hsl(var(--foreground) / 0.04),
+      0 24px 56px -30px hsl(var(--foreground) / 0.36);
+  }
+
+  .premium-glass {
+    border: 1px solid hsl(0 0% 100% / 0.55);
+    background: hsl(var(--card) / 0.78);
+    box-shadow: 0 18px 60px -36px hsl(var(--foreground) / 0.35);
+    backdrop-filter: blur(18px);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-premium {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--accent) / 0.45) transparent;
+  }
+
+  .scrollbar-premium::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  .scrollbar-premium::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: hsl(var(--accent) / 0.42);
+  }
+}
+
