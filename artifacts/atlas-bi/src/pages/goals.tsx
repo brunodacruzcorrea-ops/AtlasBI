@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListGoals, getListGoalsQueryKey, useListConsultants, getListConsultantsQueryKey, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@workspace/api-client-react";
+import { useListGoals, getListGoalsQueryKey, useListConsultors, getListConsultorsQueryKey, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@workspace/api-client-react";
 import { Plus, Edit2, Trash2, Target, Calendar as CalendarIcon, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
@@ -11,7 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancelar, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatBRL, formatNumber } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,8 +39,8 @@ export default function Goals() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: consultants } = useListConsultants({
-    query: { queryKey: getListConsultantsQueryKey() }
+  const { data: consultants } = useListConsultors({
+    query: { queryKey: getListConsultorsQueryKey() }
   });
 
   const { data: goals, isLoading } = useListGoals(
@@ -157,8 +157,8 @@ export default function Goals() {
   };
 
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
   ];
 
   return (
@@ -166,7 +166,7 @@ export default function Goals() {
       <div className="premium-glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row itens-start md:items-end justify-between gap-5">
         <div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.035em] text-foreground uppercase">Metas Comerciais</h1>
-          <p className="text-muted-foreground font-medium mt-1">Set targets and define expectations</p>
+          <p className="text-muted-foreground font-medium mt-1">Defina objetivos e acompanhe a evolução comercial</p>
         </div>
         
         <div className="flex itens-center gap-3">
@@ -205,12 +205,12 @@ export default function Goals() {
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 px-6 rounded-lg gap-2 shadow-sm">
                 <Target className="w-5 h-5 text-accent" />
-                Set New Goal
+                Nova Meta
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle className="text-xl font-black uppercase">{editingId ? "Edit Goal" : "Set New Goal"}</DialogTitle>
+                <DialogTitle className="text-xl font-black uppercase">{editingId ? "Edit Goal" : "Nova Meta"}</DialogTitle>
               </DialogHeader>
               
               {!editingId && (
@@ -230,7 +230,7 @@ export default function Goals() {
                       name="consultantId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Consultant</FormLabel>
+                          <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Consultor</FormLabel>
                           <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : undefined}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/50 focus:ring-primary">
@@ -321,7 +321,7 @@ export default function Goals() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Notes/Description</FormLabel>
+                        <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Observações/Description</FormLabel>
                         <FormControl>
                           <Input placeholder="E.g., Q3 push objective" value={field.value || ""} onChange={field.onChange} className="bg-muted/50 focus-visible:ring-primary" />
                         </FormControl>
@@ -331,9 +331,9 @@ export default function Goals() {
                   />
                   
                   <div className="pt-4 flex justify-end gap-3">
-                    <Button type="button" variant="outline" onClick={handleCloseDialog}>Cancel</Button>
+                    <Button type="button" variant="outline" onClick={handleCloseDialog}>Cancelar</Button>
                     <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
-                      {editingId ? "Save Changes" : "Set Goal"}
+                      {editingId ? "Salvar Alterações" : "Definir Meta"}
                     </Button>
                   </div>
                 </form>
@@ -356,7 +356,7 @@ export default function Goals() {
           ) : teamGoals.length === 0 ? (
             <div className="bg-card border border-card-border border-dashed rounded-xl p-8 flex flex-col itens-center justify-center text-center">
               <Target className="w-10 h-10 text-muted-foreground/30 mb-3" />
-              <p className="text-sm font-bold text-muted-foreground">No team goals set for this month</p>
+              <p className="text-sm font-bold text-muted-foreground">Nenhuma meta global definida para este mês</p>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
@@ -388,7 +388,7 @@ export default function Goals() {
                   
                   {goal.targetQuantity && (
                     <div className="mt-4 pt-4 border-t border-white/20 flex justify-between itens-center">
-                      <span className="text-xs font-bold uppercase tracking-widest text-white/70">Meta de Volume</span>
+                      <span className="text-xs font-bold uppercase tracking-widest text-white/70">Meta de Quantidade</span>
                       <span className="font-bold text-lg">{goal.targetQuantity} itens</span>
                     </div>
                   )}
@@ -398,11 +398,11 @@ export default function Goals() {
           )}
         </div>
 
-        {/* Individual Goals Column */}
+        {/* Metas Individuais Column */}
         <div className="xl:col-span-2 flex flex-col gap-6">
           <h2 className="text-xl font-bold uppercase tracking-wider text-foreground flex itens-center gap-2">
             <Target className="w-5 h-5 text-accent" />
-            Individual Goals
+            Metas Individuais
           </h2>
           
           {isLoading ? (
@@ -410,8 +410,8 @@ export default function Goals() {
           ) : individualGoals.length === 0 ? (
             <div className="bg-card border border-card-border border-dashed rounded-xl p-12 flex flex-col itens-center justify-center text-center">
               <Users className="w-12 h-12 text-muted-foreground/30 mb-4" />
-              <p className="text-lg font-bold text-foreground">No individual goals</p>
-              <p className="text-sm text-muted-foreground mt-1">Set specific targets for your consultants this month.</p>
+              <p className="text-lg font-bold text-foreground">Nenhuma meta individual</p>
+              <p className="text-sm text-muted-foreground mt-1">Defina objetivos específicos para os consultores neste mês.</p>
             </div>
           ) : (
             <div className="premium-card rounded-2xl overflow-hidden">
@@ -419,11 +419,11 @@ export default function Goals() {
                 <table className="w-full text-sm text-left">
                   <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-bold tracking-wider">
                     <tr>
-                      <th className="px-6 py-4">Consultant</th>
-                      <th className="px-6 py-4 text-right">Revenue Target</th>
-                      <th className="px-6 py-4 text-right">Volume</th>
-                      <th className="px-6 py-4">Notes</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
+                      <th className="px-6 py-4">Consultor</th>
+                      <th className="px-6 py-4 text-right">Meta de Faturamento</th>
+                      <th className="px-6 py-4 text-right">Quantidade</th>
+                      <th className="px-6 py-4">Observações</th>
+                      <th className="px-6 py-4 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-card-border">
@@ -436,7 +436,7 @@ export default function Goals() {
                         className="hover:bg-muted/30 transition-colors"
                       >
                         <td className="px-6 py-4 font-bold text-foreground">
-                          {goal.consultantName || `Consultant #${goal.consultantId}`}
+                          {goal.consultantName || `Consultor #${goal.consultantId}`}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <span className="font-black text-[hsl(var(--chart-4))] font-mono bg-[hsl(var(--chart-4))]/10 px-2 py-1 rounded">
@@ -470,7 +470,7 @@ export default function Goals() {
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogCancelar>Cancelar</AlertDialogCancelar>
                                   <AlertDialogAction onClick={() => handleDelete(goal.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                     Delete
                                   </AlertDialogAction>
