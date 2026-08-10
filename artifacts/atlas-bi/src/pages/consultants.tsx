@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import {
   useListConsultants,
   getListConsultantsQueryKey,
@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   XCircle,
   Users,
+  Camera,
+  Upload,
 } from "lucide-react";
 import {
   Dialog,
@@ -56,7 +58,7 @@ const consultantSchema = z.object({
   email: z.string().email("E-mail inválido"),
   team: z.string().min(1, "Equipe obrigatória"),
   role: z.string().min(1, "Cargo obrigatório"),
-  photo: z.string().optional(),
+  photo: z.string().max(3_000_000, "A foto é muito grande").optional(),
   active: z.boolean().default(true),
 });
 
@@ -178,6 +180,50 @@ export default function Consultants() {
     });
   };
 
+  const handlePhotoUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Formato de foto inválido",
+        description: "Selecione uma imagem JPG, PNG ou WebP.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "Foto muito grande",
+        description: "A imagem deve ter no máximo 2 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        form.setValue("photo", reader.result, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    };
+    reader.onerror = () => {
+      toast({
+        title: "Não foi possível ler a foto",
+        description: "Tente selecionar o arquivo novamente.",
+        variant: "destructive",
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="flex flex-col gap-8 pb-10">
       <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
@@ -259,15 +305,52 @@ export default function Consultants() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-bold uppercase text-muted-foreground">
-                        Foto (link da imagem)
+                        Foto de perfil
                       </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://i.postimg.cc/.../foto.png"
-                          {...field}
-                          className="bg-muted/50 focus-visible:ring-primary"
-                        />
-                      </FormControl>
+                      <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+                        <div className="flex items-center gap-4">
+                          <div className="relative w-20 h-20 shrink-0 rounded-full overflow-hidden border-2 border-primary/20 bg-sidebar-accent flex items-center justify-center text-sidebar-primary">
+                            <Camera className="w-7 h-7" aria-hidden="true" />
+                            {field.value && (
+                              <img
+                                src={field.value}
+                                alt="Pré-visualização da foto do consultor"
+                                className="absolute inset-0 w-full h-full object-cover"
+                                onError={(event) => event.currentTarget.remove()}
+                              />
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              onChange={handlePhotoUpload}
+                              className="bg-background file:font-bold file:text-primary"
+                              aria-label="Selecionar foto do consultor"
+                            />
+                            <p className="text-[11px] text-muted-foreground">
+                              JPG, PNG ou WebP, com no máximo 2 MB.
+                            </p>
+                          </div>
+                        </div>
+                        {field.value && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              form.setValue("photo", "", {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              })
+                            }
+                            className="w-full gap-2 text-destructive hover:text-destructive"
+                          >
+                            <XCircle className="w-4 h-4" />
+                            Remover foto
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -522,3 +605,4 @@ export default function Consultants() {
     </div>
   );
 }
+
