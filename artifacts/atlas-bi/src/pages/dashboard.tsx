@@ -1,6 +1,6 @@
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetDashboardRanking, getGetDashboardRankingQueryKey, useGetProductionChart, getGetProductionChartQueryKey } from "@workspace/api-client-react";
 import { formatBRL, formatNumber, formatPercent, cn } from "@/lib/utils";
-import { TrendingUp, Users, Target, Activity, Medal, Trophy } from "lucide-react";
+import { TrendingUp, Users, Target, Activity, Medal, Trophy, WalletCards, ReceiptText, UserCheck } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ComposedChart, Line } from 'recharts';
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -48,6 +48,11 @@ export default function Dashboard() {
 
   const top3 = ranking.slice(0, 3);
   const restRanking = ranking.slice(3);
+  const remainingToGoal = Math.max(0, summary.goalAmount - summary.totalSales);
+  const averageTicket = summary.totalQuantity > 0 ? summary.totalSales / summary.totalQuantity : 0;
+  const activeTeamPercent = summary.totalConsultants > 0
+    ? (summary.activeConsultants / summary.totalConsultants) * 100
+    : 0;
 
   // Podium order: 2nd, 1st, 3rd
   const podiumOrder = [
@@ -167,6 +172,31 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Executive insights */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <ExecutiveInsight
+          title="Restante para a meta"
+          value={formatBRL(remainingToGoal)}
+          description={remainingToGoal > 0 ? "Valor necessário para atingir a meta mensal" : "Meta mensal atingida"}
+          icon={WalletCards}
+          tone="accent"
+        />
+        <ExecutiveInsight
+          title="Ticket médio"
+          value={formatBRL(averageTicket)}
+          description="Valor médio por item vendido no período"
+          icon={ReceiptText}
+          tone="primary"
+        />
+        <ExecutiveInsight
+          title="Equipe ativa"
+          value={formatPercent(activeTeamPercent)}
+          description={`${summary.activeConsultants} de ${summary.totalConsultants} consultores com atividade`}
+          icon={UserCheck}
+          tone="success"
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Production Chart */}
         <motion.div 
@@ -261,6 +291,31 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ExecutiveInsight({ title, value, description, icon: Icon, tone }: any) {
+  const tones: Record<string, string> = {
+    accent: "bg-accent/10 text-accent border-accent/20",
+    primary: "bg-primary/10 text-primary border-primary/20",
+    success: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="premium-card rounded-2xl p-5 flex items-center gap-4"
+    >
+      <div className={cn("w-12 h-12 rounded-xl border flex items-center justify-center shrink-0", tones[tone])}>
+        <Icon className="w-6 h-6" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-black uppercase tracking-[0.12em] text-muted-foreground">{title}</p>
+        <p className="text-xl font-black text-foreground truncate">{value}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+      </div>
+    </motion.div>
   );
 }
 
