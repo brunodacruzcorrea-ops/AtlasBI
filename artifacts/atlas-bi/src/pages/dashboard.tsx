@@ -274,7 +274,7 @@ export default function Dashboard() {
       transition={{ delay }}
       className={cn(
         "premium-card rounded-2xl border p-6 relative overflow-hidden flex flex-col justify-between",
-        highlight ? "bg-primary text-primary-foreground border-primary" : "bg-card border-card-border text-card-foreground"
+        highlight ? "bg-[linear-gradient(145deg,#102b58,#081d3d)] !text-white !border-[#102b58] shadow-[0_24px_50px_-24px_rgba(8,29,61,0.72)]" : "bg-card border-card-border text-card-foreground"
       )}
     >
       {highlight && (
