@@ -236,6 +236,17 @@ export default function Dashboard() {
                   <div key={entry.consultantId} className="p-3 flex items-center justify-between hover:bg-muted/30 transition-colors">
                     <div className="flex items-center gap-3">
                       <span className="w-6 text-center text-sm font-bold text-muted-foreground">{entry.position}</span>
+                      <div className="relative w-8 h-8 shrink-0 rounded-full overflow-hidden bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                        {entry.consultantName.charAt(0).toUpperCase()}
+                        {entry.photo && (
+                          <img
+                            src={entry.photo}
+                            alt={entry.consultantName}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={(event) => event.currentTarget.remove()}
+                          />
+                        )}
+                      </div>
                       <div className="font-semibold text-sm text-foreground">{entry.consultantName}</div>
                     </div>
                     <div className="text-right">
@@ -307,8 +318,16 @@ function PodiumColumn({ rank, data, height, color, delay }: any) {
       className="flex flex-col items-center justify-end w-full max-w-[100px] relative group"
     >
       <div className="absolute -top-16 flex flex-col items-center justify-center w-full">
-        <div className="w-12 h-12 rounded-full bg-card border-2 shadow-md flex items-center justify-center text-lg font-black z-10" style={{ borderColor: rank === 1 ? 'hsl(var(--chart-4))' : rank === 2 ? 'hsl(var(--chart-5))' : '#CD7F32' }}>
+        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-card border-2 shadow-md flex items-center justify-center text-lg font-black z-10" style={{ borderColor: rank === 1 ? 'hsl(var(--chart-4))' : rank === 2 ? 'hsl(var(--chart-5))' : '#CD7F32' }}>
           {data.consultantName.charAt(0).toUpperCase()}
+          {data.photo && (
+            <img
+              src={data.photo}
+              alt={data.consultantName}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(event) => event.currentTarget.remove()}
+            />
+          )}
         </div>
         <div className="mt-2 text-center">
           <p className="text-xs font-bold text-foreground truncate w-full px-1">{data.consultantName.split(' ')[0]}</p>

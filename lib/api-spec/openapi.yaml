@@ -548,6 +548,8 @@ components:
         email:
           type: string
           format: email
+        photo:
+          type: ["string", "null"]
         role:
           type: string
         team:
@@ -565,6 +567,8 @@ components:
           type: string
         email:
           type: string
+        photo:
+          type: ["string", "null"]
         role:
           type: string
         team:
@@ -753,6 +757,8 @@ components:
           type: integer
         consultantName:
           type: string
+        photo:
+          type: ["string", "null"]
         totalAmount:
           type: number
         totalQuantity:

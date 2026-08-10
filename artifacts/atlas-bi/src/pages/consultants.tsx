@@ -62,7 +62,7 @@ const consultantSchema = z.object({
 
 export default function Consultants() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterActive, setFilterActive] = useState
+  const [filterActive, setFilterActive] = useState<
     "all" | "active" | "inactive"
   >("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -420,17 +420,17 @@ export default function Consultants() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {consultant.photo ? (
-                          <img
-                            src={consultant.photo}
-                            alt={consultant.name}
-                            className="w-10 h-10 rounded-full object-cover border border-sidebar-primary/20"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-sidebar-accent flex items-center justify-center font-bold text-sidebar-primary border border-sidebar-primary/20">
-                            {consultant.name?.charAt(0)?.toUpperCase() ?? "?"}
-                          </div>
-                        )}
+                        <div className="relative w-10 h-10 shrink-0 rounded-full bg-sidebar-accent flex items-center justify-center font-bold text-sidebar-primary border border-sidebar-primary/20 overflow-hidden">
+                          {consultant.name?.charAt(0)?.toUpperCase() ?? "?"}
+                          {consultant.photo && (
+                            <img
+                              src={consultant.photo}
+                              alt={consultant.name}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              onError={(event) => event.currentTarget.remove()}
+                            />
+                          )}
+                        </div>
                         <div>
                           <div className="font-bold text-foreground">
                             {consultant.name}
