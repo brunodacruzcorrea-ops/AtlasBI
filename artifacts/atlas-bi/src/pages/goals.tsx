@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListGoals, getListGoalsQueryKey, useListConsultors, getListConsultorsQueryKey, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@workspace/api-client-react";
+import { useListGoals, getListGoalsQueryKey, useListConsultants, getListConsultantsQueryKey, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@workspace/api-client-react";
 import { Plus, Edit2, Trash2, Target, Calendar as CalendarIcon, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
@@ -39,8 +39,8 @@ export default function Goals() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: consultants } = useListConsultors({
-    query: { queryKey: getListConsultorsQueryKey() }
+  const { data: consultants } = useListConsultants({
+    query: { queryKey: getListConsultantsQueryKey() }
   });
 
   const { data: goals, isLoading } = useListGoals(
