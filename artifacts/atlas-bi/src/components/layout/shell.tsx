@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "../auth-provider";
 import { useLogout } from "@workspace/api-client-react";
@@ -13,6 +13,8 @@ import {
   Menu,
   X,
   Sparkles,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,6 +34,12 @@ const ADMIN_NAV_ITEMS = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem("atlas_theme");
+    return savedTheme
+      ? savedTheme === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const queryClient = useQueryClient();
@@ -50,6 +58,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
   };
 
   const navigate = () => setMobileMenuOpen(false);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.setItem("atlas_theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
@@ -140,6 +153,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="border-t border-white/5 p-4">
+          <button
+            type="button"
+            onClick={() => setDarkMode((enabled) => !enabled)}
+            className="mb-3 flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 text-sm font-semibold text-sidebar-foreground/70 transition-all hover:bg-white/[0.08] hover:text-sidebar-foreground"
+            aria-label={darkMode ? "Ativar modo claro" : "Ativar modo escuro"}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary/10 text-sidebar-primary">
+              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </span>
+            <span className="flex-1 text-left">{darkMode ? "Modo claro" : "Modo escuro"}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-sidebar-foreground/35">
+              {darkMode ? "Escuro" : "Claro"}
+            </span>
+          </button>
           <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sidebar-primary/25 bg-sidebar-primary/10 text-sm font-black text-sidebar-primary">
               {user?.name?.charAt(0).toUpperCase() || "A"}
