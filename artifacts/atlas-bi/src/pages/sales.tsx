@@ -60,6 +60,26 @@ import {
 } from "@/components/ui/select";
 import { formatBRL, formatNumber } from "@/lib/utils";
 
+function toLocalDateInput(value: Date | string = new Date()): string {
+  if (typeof value === "string") return value.slice(0, 10);
+
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatSaleDate(value: Date | string): string {
+  const [year, month, day] = toLocalDateInput(value).split("-").map(Number);
+  if (!year || !month || !day) return "Data inválida";
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(year, month - 1, day));
+}
+
 const saleSchema = z.object({
   consultantId: z.coerce.number().min(1, "Consultant is required"),
   product: z.string().min(1, "Product name is required"),
@@ -120,7 +140,7 @@ export default function Sales() {
       segment: "",
       amount: 0,
       quantity: 1,
-      saleDate: new Date().toISOString().split("T")[0],
+      saleDate: toLocalDateInput(),
       notes: "",
     },
   });
@@ -214,7 +234,7 @@ export default function Sales() {
       segment: sale.segment,
       amount: sale.amount,
       quantity: sale.quantity,
-      saleDate: new Date(sale.saleDate).toISOString().split("T")[0],
+      saleDate: toLocalDateInput(sale.saleDate),
       notes: sale.notes || "",
     });
     setIsCreateOpen(true);
@@ -251,7 +271,7 @@ export default function Sales() {
       segment: "",
       amount: 0,
       quantity: 1,
-      saleDate: new Date().toISOString().split("T")[0],
+      saleDate: toLocalDateInput(),
       notes: "",
     });
   };
@@ -584,11 +604,7 @@ export default function Sales() {
                     className="hover:bg-muted/30 transition-colors"
                   >
                     <td className="px-6 py-4 font-medium text-foreground whitespace-nowrap">
-                      {new Date(sale.saleDate).toLocaleDateString("en-US", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatSaleDate(sale.saleDate)}
                     </td>
                     <td className="px-6 py-4 font-bold text-foreground">
                       {sale.consultantName || (
