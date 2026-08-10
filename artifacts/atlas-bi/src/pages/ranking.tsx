@@ -26,6 +26,7 @@ export default function Ranking() {
     (previousRanking || []).map((entry) => [entry.consultantId, entry.position])
   );
   const isLoading = loadingCurrent || loadingPrevious;
+  const topThree = (ranking || []).slice(0, 3);
 
   const months = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -70,11 +71,49 @@ export default function Ranking() {
       ) : !ranking || ranking.length === 0 ? (
         <div className="bg-card border border-card-border rounded-xl p-12 flex flex-col items-center justify-center text-center">
           <Trophy className="w-16 h-16 text-muted-foreground/30 mb-4" />
-          <h3 className="text-xl font-bold text-foreground">No ranking data</h3>
-          <p className="text-muted-foreground mt-2">There is no sales data for the selected period.</p>
+          <h3 className="text-xl font-bold text-foreground">Nenhum resultado no ranking</h3>
+          <p className="text-muted-foreground mt-2">Não existem vendas registradas no período selecionado.</p>
         </div>
       ) : (
         <div className="premium-card rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 lg:p-6 border-b border-card-border bg-gradient-to-br from-primary/[0.04] to-accent/[0.06]">
+            {topThree.map((entry) => {
+              const previousPosition = previousPositions.get(entry.consultantId);
+              const change = previousPosition == null ? null : previousPosition - entry.position;
+              const rankStyle = entry.position === 1
+                ? "border-amber-400/40 bg-amber-400/10"
+                : entry.position === 2
+                  ? "border-slate-400/40 bg-slate-400/10"
+                  : "border-orange-600/35 bg-orange-600/10";
+              return (
+                <motion.div
+                  key={entry.consultantId}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={cn("relative overflow-hidden rounded-2xl border p-5", rankStyle)}
+                >
+                  <div className="absolute right-3 top-2 text-6xl font-black opacity-[0.07]">{entry.position}</div>
+                  <div className="relative flex items-center gap-4">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-black shadow-lg">
+                      {entry.consultantName.charAt(0).toUpperCase()}
+                      {entry.photo && <img src={entry.photo} alt={entry.consultantName} className="absolute inset-0 h-full w-full object-cover" onError={(event) => event.currentTarget.remove()} />}
+                      <span className={cn("absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-tl-xl text-white", entry.position === 1 ? "bg-amber-500" : entry.position === 2 ? "bg-slate-500" : "bg-orange-700")}>
+                        <Medal className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">{entry.position}º colocado</p>
+                      <h3 className="truncate text-lg font-black text-foreground">{entry.consultantName}</h3>
+                      <p className="text-sm font-black text-accent">{formatBRL(entry.totalAmount)}</p>
+                      <p className={cn("mt-1 text-xs font-bold", change && change > 0 ? "text-emerald-600" : change && change < 0 ? "text-red-500" : "text-muted-foreground")}>
+                        {change == null ? "Novo no ranking" : change > 0 ? `Subiu ${change} posição(ões)` : change < 0 ? `Desceu ${Math.abs(change)} posição(ões)` : "Posição mantida"}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-bold tracking-wider">
