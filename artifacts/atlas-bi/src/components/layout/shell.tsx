@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { SalesRealtimeNotifications } from "../sales-realtime-notifications";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -66,6 +67,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
+      <SalesRealtimeNotifications />
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/10 bg-sidebar/95 px-4 text-sidebar-foreground shadow-lg backdrop-blur-xl lg:hidden">
         <div className="flex items-center gap-3">
           <img src="/niadcon-logo.png" alt="Niadcon" className="h-9 w-auto" />
