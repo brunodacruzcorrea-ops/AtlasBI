@@ -352,3 +352,66 @@
   }
 }
 
+
+
+/* ATLAS PREMIUM DESIGN SYSTEM */
+@layer components {
+  .premium-surface {
+    border: 1px solid hsl(var(--card-border) / 0.92);
+    border-radius: 1.25rem;
+    background: hsl(var(--card) / 0.96);
+    box-shadow: 0 18px 48px -32px hsl(var(--foreground) / 0.34);
+  }
+
+  .status-success {
+    border: 1px solid rgb(16 185 129 / 0.18);
+    background: rgb(16 185 129 / 0.1);
+    color: rgb(5 150 105);
+  }
+
+  .status-warning {
+    border: 1px solid hsl(var(--accent) / 0.2);
+    background: hsl(var(--accent) / 0.1);
+    color: hsl(var(--accent));
+  }
+
+  .status-danger {
+    border: 1px solid hsl(var(--destructive) / 0.2);
+    background: hsl(var(--destructive) / 0.1);
+    color: hsl(var(--destructive));
+  }
+
+  .status-neutral {
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--muted) / 0.7);
+    color: hsl(var(--muted-foreground));
+  }
+
+  .dark .premium-glass {
+    border-color: hsl(var(--card-border) / 0.8);
+    background: hsl(var(--card) / 0.82);
+  }
+
+  .dark .premium-card {
+    background: linear-gradient(145deg, hsl(var(--card) / 0.98), hsl(var(--card) / 0.88));
+    box-shadow: 0 22px 55px -32px rgb(0 0 0 / 0.75);
+  }
+}
+
+@layer base {
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input, select, textarea {
+    border-radius: 0.75rem;
+  }
+
+  select {
+    color-scheme: light;
+  }
+
+  .dark select {
+    color-scheme: dark;
+  }
+}
