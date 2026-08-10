@@ -6,6 +6,7 @@ import salesRouter from "./sales";
 import goalsRouter from "./goals";
 import dashboardRouter from "./dashboard";
 import usersRouter from "./users";
+import salesEventsRouter from "./sales-events";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(salesRouter);
 router.use(goalsRouter);
 router.use(dashboardRouter);
 router.use(usersRouter);
+router.use(salesEventsRouter);
 
 export default router;
