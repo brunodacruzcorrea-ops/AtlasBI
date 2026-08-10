@@ -5,6 +5,12 @@ import {
   useCreateConsultant,
   useUpdateConsultant,
   useDeleteConsultant,
+  useListSales,
+  getListSalesQueryKey,
+  useListGoals,
+  getListGoalsQueryKey,
+  useGetDashboardRanking,
+  getGetDashboardRankingQueryKey,
 } from "@workspace/api-client-react";
 import {
   Plus,
@@ -16,6 +22,11 @@ import {
   Users,
   Camera,
   Upload,
+  BarChart3,
+  ShoppingBag,
+  Target,
+  Trophy,
+  ReceiptText,
 } from "lucide-react";
 import {
   Dialog,
@@ -41,6 +52,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { formatBRL, formatPercent } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,6 +81,9 @@ export default function Consultants() {
   >("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [analyticsConsultant, setAnalyticsConsultant] = useState<any | null>(null);
+  const analyticsMonth = new Date().getMonth() + 1;
+  const analyticsYear = new Date().getFullYear();
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -76,6 +91,36 @@ export default function Consultants() {
   const { data: consultants, isLoading } = useListConsultants({
     query: { queryKey: getListConsultantsQueryKey() },
   });
+
+  const { data: analyticsSales } = useListSales(
+    { consultantId: analyticsConsultant?.id, month: analyticsMonth, year: analyticsYear },
+    { query: {
+      queryKey: getListSalesQueryKey({ consultantId: analyticsConsultant?.id, month: analyticsMonth, year: analyticsYear }),
+      enabled: Boolean(analyticsConsultant),
+    } }
+  );
+  const { data: analyticsGoals } = useListGoals(
+    { month: analyticsMonth, year: analyticsYear },
+    { query: {
+      queryKey: getListGoalsQueryKey({ month: analyticsMonth, year: analyticsYear }),
+      enabled: Boolean(analyticsConsultant),
+    } }
+  );
+  const { data: analyticsRanking } = useGetDashboardRanking(
+    { month: analyticsMonth, year: analyticsYear, limit: 100 },
+    { query: {
+      queryKey: getGetDashboardRankingQueryKey({ month: analyticsMonth, year: analyticsYear, limit: 100 }),
+      enabled: Boolean(analyticsConsultant),
+    } }
+  );
+
+  const consultantSalesTotal = (analyticsSales || []).reduce((total, sale) => total + sale.amount, 0);
+  const consultantQuantity = (analyticsSales || []).reduce((total, sale) => total + sale.quantity, 0);
+  const consultantTicket = consultantQuantity > 0 ? consultantSalesTotal / consultantQuantity : 0;
+  const consultantGoal = (analyticsGoals || []).find((goal) => goal.consultantId === analyticsConsultant?.id);
+  const consultantGoalAmount = Number(consultantGoal?.targetAmount || 0);
+  const consultantAchievement = consultantGoalAmount > 0 ? (consultantSalesTotal / consultantGoalAmount) * 100 : 0;
+  const consultantRanking = (analyticsRanking || []).find((entry) => entry.consultantId === analyticsConsultant?.id);
 
   const createMutation = useCreateConsultant();
   const updateMutation = useUpdateConsultant();
@@ -556,7 +601,16 @@ export default function Consultants() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEdit(consultant)}
+                          title="Ver perfil analítico"
+                          onClick={() => setAnalyticsConsultant(consultant)}
+                          className="h-8 w-8 hover:bg-accent/10 hover:text-accent"
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(consultant)
                           className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -602,7 +656,64 @@ export default function Consultants() {
           </div>
         )}
       </div>
+      <Dialog open={Boolean(analyticsConsultant)} onOpenChange={(open) => !open && setAnalyticsConsultant(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black uppercase tracking-tight">Perfil analítico</DialogTitle>
+          </DialogHeader>
+          {analyticsConsultant && (
+            <div className="space-y-6">
+              <div className="rounded-2xl bg-[linear-gradient(135deg,#102b58,#081d3d)] text-white p-6 flex flex-col sm:flex-row items-center gap-5">
+                <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-white/15 flex items-center justify-center text-3xl font-black shrink-0">
+                  {analyticsConsultant.name?.charAt(0)?.toUpperCase()}
+                  {analyticsConsultant.photo && <img src={analyticsConsultant.photo} alt={analyticsConsultant.name} className="absolute inset-0 w-full h-full object-cover" />}
+                </div>
+                <div className="text-center sm:text-left">
+                  <h3 className="text-2xl font-black">{analyticsConsultant.name}</h3>
+                  <p className="text-white/70">{analyticsConsultant.role || "Consultor"} · {analyticsConsultant.team || "Sem equipe"}</p>
+                  <p className="text-xs text-white/55 mt-1">Análise de {analyticsMonth.toString().padStart(2, "0")}/{analyticsYear}</p>
+                </div>
+                <div className="sm:ml-auto text-center sm:text-right">
+                  <p className="text-xs uppercase tracking-widest text-white/60">Posição atual</p>
+                  <p className="text-4xl font-black">{consultantRanking?.position ? `${consultantRanking.position}º` : "—"}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <AnalyticsMetric icon={ShoppingBag} label="Total vendido" value={formatBRL(consultantSalesTotal)} />
+                <AnalyticsMetric icon={ReceiptText} label="Ticket médio" value={formatBRL(consultantTicket)} />
+                <AnalyticsMetric icon={Target} label="Meta individual" value={consultantGoalAmount > 0 ? formatBRL(consultantGoalAmount) : "Sem meta"} />
+                <AnalyticsMetric icon={Trophy} label="Meta atingida" value={formatPercent(consultantAchievement)} />
+              </div>
+
+              <div className="premium-card rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-black uppercase tracking-wider text-sm">Progresso individual</h4>
+                  <span className="font-black text-accent">{formatPercent(consultantAchievement)}</span>
+                </div>
+                <div className="h-3 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${Math.min(100, consultantAchievement)}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">{consultantQuantity} itens vendidos em {(analyticsSales || []).length} lançamento(s).</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
 
+
+function AnalyticsMetric({ icon: Icon, label, value }: any) {
+  return (
+    <div className="premium-card rounded-2xl p-4">
+      <div className="w-9 h-9 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-3">
+        <Icon className="w-4 h-4" />
+      </div>
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-lg font-black text-foreground mt-1 truncate">{value}</p>
+    </div>
+  );
+}
