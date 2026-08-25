@@ -35,15 +35,38 @@ router.get("/events/sales", ensureAuth, (req, res): void => {
   res.flushHeaders();
 
   clients.add(res);
-  res.write(`event: connected\ndata: {"connected":true}\n\n`);
 
-  const heartbeat = setInterval(() => {
-    res.write(`: heartbeat ${Date.now()}\n\n`);
+  let heartbeat: NodeJS.Timeout | undefined;
+
+  const cleanup = (): void => {
+    if (heartbeat) clearInterval(heartbeat);
+    clients.delete(res);
+  };
+
+  // A dead connection (e.g. killed by an intermediate proxy's idle/streaming
+  // timeout) can make res.write() fail. Without an "error" listener, Node
+  // treats that as an unhandled error on the stream and crashes the whole
+  // process - which is what was taking the service offline. Handle it
+  // gracefully instead, same as broadcastSaleCreated already does.
+  res.on("error", cleanup);
+
+  try {
+    res.write(`event: connected\ndata: {"connected":true}\n\n`);
+  } catch {
+    cleanup();
+    return;
+  }
+
+  heartbeat = setInterval(() => {
+    try {
+      res.write(`: heartbeat ${Date.now()}\n\n`);
+    } catch {
+      cleanup();
+    }
   }, 25_000);
 
   req.on("close", () => {
-    clearInterval(heartbeat);
-    clients.delete(res);
+    cleanup();
     res.end();
   });
 });
