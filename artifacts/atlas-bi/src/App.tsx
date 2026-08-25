@@ -11,6 +11,7 @@ import Consultants from './pages/consultants';
 import Sales from './pages/sales';
 import Goals from './pages/goals';
 import UsersPage from './pages/users';
+import CartasContempladas from './pages/cartas-contempladas';
 import RootRedirect from './pages/index';
 const queryClient = new QueryClient();
 function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/sales"><ProtectedRoute component={Sales} /></Route>
       <Route path="/goals"><ProtectedRoute component={Goals} /></Route>
       <Route path="/users"><ProtectedRoute component={UsersPage} /></Route>
+      <Route path="/cartas-contempladas"><ProtectedRoute component={CartasContempladas} /></Route>
       <Route>
         <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
           <h1 className="text-2xl font-bold">404 - Page Not Found</h1>

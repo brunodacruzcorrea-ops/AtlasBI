@@ -52,6 +52,8 @@ export interface ConsultantInput {
   /** @minLength 1 */
   name: string;
   email: string;
+  /** @nullable */
+  photo?: string | null;
   role?: string;
   team?: string;
   active?: boolean;
@@ -60,6 +62,8 @@ export interface ConsultantInput {
 export interface ConsultantUpdate {
   name?: string;
   email?: string;
+  /** @nullable */
+  photo?: string | null;
   role?: string;
   team?: string;
   active?: boolean;
@@ -133,6 +137,60 @@ export interface GoalUpdate {
   description?: string;
 }
 
+export interface CartaContemplada {
+  id: number;
+  tipoBem: string;
+  valorCredito: number;
+  valorEntrada: number;
+  valorParcela: number;
+  quantidadeParcelas: number;
+  status: string;
+  /** @nullable */
+  observacoes?: string | null;
+  createdAt: string;
+}
+
+export type CartaContempladaInputStatus = typeof CartaContempladaInputStatus[keyof typeof CartaContempladaInputStatus];
+
+
+export const CartaContempladaInputStatus = {
+  disponivel: 'disponivel',
+  reservada: 'reservada',
+  vendida: 'vendida',
+} as const;
+
+export interface CartaContempladaInput {
+  /** @minLength 1 */
+  tipoBem: string;
+  valorCredito: number;
+  valorEntrada: number;
+  valorParcela: number;
+  quantidadeParcelas: number;
+  status?: CartaContempladaInputStatus;
+  /** @nullable */
+  observacoes?: string | null;
+}
+
+export type CartaContempladaUpdateStatus = typeof CartaContempladaUpdateStatus[keyof typeof CartaContempladaUpdateStatus];
+
+
+export const CartaContempladaUpdateStatus = {
+  disponivel: 'disponivel',
+  reservada: 'reservada',
+  vendida: 'vendida',
+} as const;
+
+export interface CartaContempladaUpdate {
+  tipoBem?: string;
+  valorCredito?: number;
+  valorEntrada?: number;
+  valorParcela?: number;
+  quantidadeParcelas?: number;
+  status?: CartaContempladaUpdateStatus;
+  /** @nullable */
+  observacoes?: string | null;
+}
+
 export interface DashboardSummary {
   totalSales: number;
   totalQuantity: number;
@@ -154,6 +212,8 @@ export interface RankingEntry {
   position: number;
   consultantId: number;
   consultantName: string;
+  /** @nullable */
+  photo?: string | null;
   totalAmount: number;
   totalQuantity: number;
   /** @nullable */
@@ -196,6 +256,13 @@ month?: number | null;
  * @nullable
  */
 year?: number | null;
+};
+
+export type ListCartasContempladasParams = {
+/**
+ * @nullable
+ */
+status?: string | null;
 };
 
 export type GetDashboardSummaryParams = {

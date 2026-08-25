@@ -10,6 +10,7 @@ import {
   Target,
   LogOut,
   UserCog,
+  FileText,
   Menu,
   X,
   Sparkles,
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
 
 const ADMIN_NAV_ITEMS = [
   { href: "/users", label: "Usuários", icon: UserCog },
+  { href: "/cartas-contempladas", label: "Cartas Contempladas", icon: FileText },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {

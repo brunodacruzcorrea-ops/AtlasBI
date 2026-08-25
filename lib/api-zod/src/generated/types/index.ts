@@ -7,6 +7,11 @@
  */
 
 export * from './authResponse';
+export * from './cartaContemplada';
+export * from './cartaContempladaInput';
+export * from './cartaContempladaInputStatus';
+export * from './cartaContempladaUpdate';
+export * from './cartaContempladaUpdateStatus';
 export * from './consultant';
 export * from './consultantInput';
 export * from './consultantUpdate';
@@ -19,6 +24,7 @@ export * from './goal';
 export * from './goalInput';
 export * from './goalUpdate';
 export * from './healthStatus';
+export * from './listCartasContempladasParams';
 export * from './listGoalsParams';
 export * from './listSalesParams';
 export * from './loginInput';

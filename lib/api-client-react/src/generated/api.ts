@@ -21,6 +21,9 @@ import type {
 
 import type {
   AuthResponse,
+  CartaContemplada,
+  CartaContempladaInput,
+  CartaContempladaUpdate,
   Consultant,
   ConsultantInput,
   ConsultantUpdate,
@@ -33,6 +36,7 @@ import type {
   GoalInput,
   GoalUpdate,
   HealthStatus,
+  ListCartasContempladasParams,
   ListGoalsParams,
   ListSalesParams,
   LoginInput,
@@ -1396,6 +1400,378 @@ export const useDeleteGoal = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteGoalMutationOptions(options));
+    }
+
+export const getListCartasContempladasUrl = (params?: ListCartasContempladasParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/cartas-contempladas?${stringifiedParams}` : `/api/cartas-contempladas`
+}
+
+/**
+ * @summary List all contemplated consortium letters
+ */
+export const listCartasContempladas = async (params?: ListCartasContempladasParams, options?: RequestInit): Promise<CartaContemplada[]> => {
+
+  return customFetch<CartaContemplada[]>(getListCartasContempladasUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCartasContempladasQueryKey = (params?: ListCartasContempladasParams,) => {
+    return [
+    `/api/cartas-contempladas`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListCartasContempladasQueryOptions = <TData = Awaited<ReturnType<typeof listCartasContempladas>>, TError = ErrorType<unknown>>(params?: ListCartasContempladasParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCartasContempladas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCartasContempladasQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCartasContempladas>>> = ({ signal }) => listCartasContempladas(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCartasContempladas>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCartasContempladasQueryResult = NonNullable<Awaited<ReturnType<typeof listCartasContempladas>>>
+export type ListCartasContempladasQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all contemplated consortium letters
+ */
+
+export function useListCartasContempladas<TData = Awaited<ReturnType<typeof listCartasContempladas>>, TError = ErrorType<unknown>>(
+ params?: ListCartasContempladasParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCartasContempladas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCartasContempladasQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateCartaContempladaUrl = () => {
+
+
+
+
+  return `/api/cartas-contempladas`
+}
+
+/**
+ * @summary Register a new contemplated consortium letter
+ */
+export const createCartaContemplada = async (cartaContempladaInput: CartaContempladaInput, options?: RequestInit): Promise<CartaContemplada> => {
+
+  return customFetch<CartaContemplada>(getCreateCartaContempladaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cartaContempladaInput)
+  }
+);}
+
+
+
+
+export const getCreateCartaContempladaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCartaContemplada>>, TError,{data: BodyType<CartaContempladaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCartaContemplada>>, TError,{data: BodyType<CartaContempladaInput>}, TContext> => {
+
+const mutationKey = ['createCartaContemplada'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCartaContemplada>>, {data: BodyType<CartaContempladaInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCartaContemplada(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCartaContempladaMutationResult = NonNullable<Awaited<ReturnType<typeof createCartaContemplada>>>
+    export type CreateCartaContempladaMutationBody = BodyType<CartaContempladaInput>
+    export type CreateCartaContempladaMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Register a new contemplated consortium letter
+ */
+export const useCreateCartaContemplada = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCartaContemplada>>, TError,{data: BodyType<CartaContempladaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCartaContemplada>>,
+        TError,
+        {data: BodyType<CartaContempladaInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCartaContempladaMutationOptions(options));
+    }
+
+export const getGetCartaContempladaUrl = (id: number,) => {
+
+
+
+
+  return `/api/cartas-contempladas/${id}`
+}
+
+/**
+ * @summary Get a contemplated letter by ID
+ */
+export const getCartaContemplada = async (id: number, options?: RequestInit): Promise<CartaContemplada> => {
+
+  return customFetch<CartaContemplada>(getGetCartaContempladaUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCartaContempladaQueryKey = (id: number,) => {
+    return [
+    `/api/cartas-contempladas/${id}`
+    ] as const;
+    }
+
+
+export const getGetCartaContempladaQueryOptions = <TData = Awaited<ReturnType<typeof getCartaContemplada>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCartaContemplada>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCartaContempladaQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCartaContemplada>>> = ({ signal }) => getCartaContemplada(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCartaContemplada>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCartaContempladaQueryResult = NonNullable<Awaited<ReturnType<typeof getCartaContemplada>>>
+export type GetCartaContempladaQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a contemplated letter by ID
+ */
+
+export function useGetCartaContemplada<TData = Awaited<ReturnType<typeof getCartaContemplada>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCartaContemplada>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCartaContempladaQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateCartaContempladaUrl = (id: number,) => {
+
+
+
+
+  return `/api/cartas-contempladas/${id}`
+}
+
+/**
+ * @summary Update a contemplated letter
+ */
+export const updateCartaContemplada = async (id: number,
+    cartaContempladaUpdate: CartaContempladaUpdate, options?: RequestInit): Promise<CartaContemplada> => {
+
+  return customFetch<CartaContemplada>(getUpdateCartaContempladaUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cartaContempladaUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateCartaContempladaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCartaContemplada>>, TError,{id: number;data: BodyType<CartaContempladaUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCartaContemplada>>, TError,{id: number;data: BodyType<CartaContempladaUpdate>}, TContext> => {
+
+const mutationKey = ['updateCartaContemplada'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCartaContemplada>>, {id: number;data: BodyType<CartaContempladaUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateCartaContemplada(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCartaContempladaMutationResult = NonNullable<Awaited<ReturnType<typeof updateCartaContemplada>>>
+    export type UpdateCartaContempladaMutationBody = BodyType<CartaContempladaUpdate>
+    export type UpdateCartaContempladaMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a contemplated letter
+ */
+export const useUpdateCartaContemplada = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCartaContemplada>>, TError,{id: number;data: BodyType<CartaContempladaUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCartaContemplada>>,
+        TError,
+        {id: number;data: BodyType<CartaContempladaUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateCartaContempladaMutationOptions(options));
+    }
+
+export const getDeleteCartaContempladaUrl = (id: number,) => {
+
+
+
+
+  return `/api/cartas-contempladas/${id}`
+}
+
+/**
+ * @summary Delete a contemplated letter
+ */
+export const deleteCartaContemplada = async (id: number, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getDeleteCartaContempladaUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteCartaContempladaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCartaContemplada>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCartaContemplada>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteCartaContemplada'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCartaContemplada>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteCartaContemplada(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCartaContempladaMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCartaContemplada>>>
+
+    export type DeleteCartaContempladaMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a contemplated letter
+ */
+export const useDeleteCartaContemplada = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCartaContemplada>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCartaContemplada>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteCartaContempladaMutationOptions(options));
     }
 
 export const getGetDashboardSummaryUrl = (params?: GetDashboardSummaryParams,) => {

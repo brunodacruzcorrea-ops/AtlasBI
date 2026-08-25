@@ -7,6 +7,7 @@ import goalsRouter from "./goals";
 import dashboardRouter from "./dashboard";
 import usersRouter from "./users";
 import salesEventsRouter from "./sales-events";
+import cartasContempladasRouter from "./cartas-contempladas";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(goalsRouter);
 router.use(dashboardRouter);
 router.use(usersRouter);
 router.use(salesEventsRouter);
+router.use(cartasContempladasRouter);
 
 export default router;

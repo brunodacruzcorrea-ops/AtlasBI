@@ -20,6 +20,8 @@ tags:
     description: Commercial goals management
   - name: dashboard
     description: Dashboard aggregates and rankings
+  - name: cartas-contempladas
+    description: Contemplated consortium letters management
 paths:
   /healthz:
     get:
@@ -376,6 +378,108 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  /cartas-contempladas:
+    get:
+      operationId: listCartasContempladas
+      tags: [cartas-contempladas]
+      summary: List all contemplated consortium letters
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: List of contemplated letters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CartaContemplada"
+    post:
+      operationId: createCartaContemplada
+      tags: [cartas-contempladas]
+      summary: Register a new contemplated consortium letter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CartaContempladaInput"
+      responses:
+        "201":
+          description: Contemplated letter created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartaContemplada"
+
+  /cartas-contempladas/{id}:
+    get:
+      operationId: getCartaContemplada
+      tags: [cartas-contempladas]
+      summary: Get a contemplated letter by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Contemplated letter found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartaContemplada"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCartaContemplada
+      tags: [cartas-contempladas]
+      summary: Update a contemplated letter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CartaContempladaUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartaContemplada"
+    delete:
+      operationId: deleteCartaContemplada
+      tags: [cartas-contempladas]
+      summary: Delete a contemplated letter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /dashboard/summary:
     get:
       operationId: getDashboardSummary
@@ -716,6 +820,83 @@ components:
           type: integer
         description:
           type: string
+
+    CartaContemplada:
+      type: object
+      properties:
+        id:
+          type: integer
+        tipoBem:
+          type: string
+        valorCredito:
+          type: number
+        valorEntrada:
+          type: number
+        valorParcela:
+          type: number
+        quantidadeParcelas:
+          type: integer
+        status:
+          type: string
+        observacoes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tipoBem
+        - valorCredito
+        - valorEntrada
+        - valorParcela
+        - quantidadeParcelas
+        - status
+        - createdAt
+
+    CartaContempladaInput:
+      type: object
+      properties:
+        tipoBem:
+          type: string
+          minLength: 1
+        valorCredito:
+          type: number
+        valorEntrada:
+          type: number
+        valorParcela:
+          type: number
+        quantidadeParcelas:
+          type: integer
+        status:
+          type: string
+          enum: ["disponivel", "reservada", "vendida"]
+        observacoes:
+          type: ["string", "null"]
+      required:
+        - tipoBem
+        - valorCredito
+        - valorEntrada
+        - valorParcela
+        - quantidadeParcelas
+
+    CartaContempladaUpdate:
+      type: object
+      properties:
+        tipoBem:
+          type: string
+        valorCredito:
+          type: number
+        valorEntrada:
+          type: number
+        valorParcela:
+          type: number
+        quantidadeParcelas:
+          type: integer
+        status:
+          type: string
+          enum: ["disponivel", "reservada", "vendida"]
+        observacoes:
+          type: ["string", "null"]
 
     DashboardSummary:
       type: object

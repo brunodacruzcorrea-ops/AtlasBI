@@ -361,6 +361,118 @@ export const DeleteGoalResponse = zod.object({
 
 
 /**
+ * @summary List all contemplated consortium letters
+ */
+export const ListCartasContempladasQueryParams = zod.object({
+  "status": zod.coerce.string().nullish()
+})
+
+export const ListCartasContempladasResponseItem = zod.object({
+  "id": zod.number(),
+  "tipoBem": zod.string(),
+  "valorCredito": zod.number(),
+  "valorEntrada": zod.number(),
+  "valorParcela": zod.number(),
+  "quantidadeParcelas": zod.number(),
+  "status": zod.string(),
+  "observacoes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListCartasContempladasResponse = zod.array(ListCartasContempladasResponseItem)
+
+
+/**
+ * @summary Register a new contemplated consortium letter
+ */
+
+
+
+export const CreateCartaContempladaBody = zod.object({
+  "tipoBem": zod.string().min(1),
+  "valorCredito": zod.number(),
+  "valorEntrada": zod.number(),
+  "valorParcela": zod.number(),
+  "quantidadeParcelas": zod.number(),
+  "status": zod.enum(['disponivel', 'reservada', 'vendida']).optional(),
+  "observacoes": zod.string().nullish()
+})
+
+export const CreateCartaContempladaResponse = zod.object({
+  "id": zod.number(),
+  "tipoBem": zod.string(),
+  "valorCredito": zod.number(),
+  "valorEntrada": zod.number(),
+  "valorParcela": zod.number(),
+  "quantidadeParcelas": zod.number(),
+  "status": zod.string(),
+  "observacoes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get a contemplated letter by ID
+ */
+export const GetCartaContempladaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetCartaContempladaResponse = zod.object({
+  "id": zod.number(),
+  "tipoBem": zod.string(),
+  "valorCredito": zod.number(),
+  "valorEntrada": zod.number(),
+  "valorParcela": zod.number(),
+  "quantidadeParcelas": zod.number(),
+  "status": zod.string(),
+  "observacoes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a contemplated letter
+ */
+export const UpdateCartaContempladaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateCartaContempladaBody = zod.object({
+  "tipoBem": zod.string().optional(),
+  "valorCredito": zod.number().optional(),
+  "valorEntrada": zod.number().optional(),
+  "valorParcela": zod.number().optional(),
+  "quantidadeParcelas": zod.number().optional(),
+  "status": zod.enum(['disponivel', 'reservada', 'vendida']).optional(),
+  "observacoes": zod.string().nullish()
+})
+
+export const UpdateCartaContempladaResponse = zod.object({
+  "id": zod.number(),
+  "tipoBem": zod.string(),
+  "valorCredito": zod.number(),
+  "valorEntrada": zod.number(),
+  "valorParcela": zod.number(),
+  "quantidadeParcelas": zod.number(),
+  "status": zod.string(),
+  "observacoes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a contemplated letter
+ */
+export const DeleteCartaContempladaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteCartaContempladaResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary Get dashboard summary KPIs
  */
 export const GetDashboardSummaryQueryParams = zod.object({
@@ -419,3 +531,5 @@ export const GetProductionChartResponseItem = zod.object({
   "goalAmount": zod.number().nullish()
 })
 export const GetProductionChartResponse = zod.array(GetProductionChartResponseItem)
+
+
