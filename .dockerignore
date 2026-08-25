@@ -1,0 +1,9 @@
+node_modules
+**/node_modules
+**/dist
+**/.tsbuildinfo
+.git
+artifacts/atlas-bi
+artifacts/mockup-sandbox
+attached_assets
+*.log

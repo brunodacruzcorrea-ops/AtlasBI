@@ -25,7 +25,27 @@ app.use(
     },
   }),
 );
-app.use(cors());
+const PROD_ORIGIN = "https://atlas.niadcon.com.br";
+const PREVIEW_ORIGIN_RE = /^https:\/\/[a-z0-9-]+\.atlas-bi\.pages\.dev$/;
+const LOCAL_ORIGIN_RE = /^http:\/\/localhost:\d+$/;
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (origin === PROD_ORIGIN || PREVIEW_ORIGIN_RE.test(origin)) {
+        return callback(null, true);
+      }
+      if (
+        process.env.NODE_ENV !== "production" &&
+        LOCAL_ORIGIN_RE.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      callback(new Error("Not allowed by CORS"));
+    },
+  }),
+);
 app.use(express.json({ limit: "3mb" }));
 app.use(express.urlencoded({ extended: true, limit: "3mb" }));
 
