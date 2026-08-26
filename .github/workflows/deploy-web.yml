@@ -13,6 +13,15 @@ on:
 
 jobs:
   deploy:
+    # Dormente até a migração para a Cloudflare ser de fato ligada. Sem isso o
+    # workflow dispararia em todo push que toque estes caminhos e falharia por
+    # falta de CLOUDFLARE_API_TOKEN, deixando um X vermelho no main que parece
+    # deploy quebrado — mas o site é publicado pelo Railway, não por aqui.
+    #
+    # Para ligar: crie a variável de repositório CLOUDFLARE_DEPLOY_ENABLED com
+    # o valor "true" (Settings > Secrets and variables > Actions > Variables),
+    # depois de configurar os secrets. Ver docs/migracao-cloudflare.md.
+    if: vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
