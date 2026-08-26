@@ -2,17 +2,30 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "atlas-api-server",
   "main": "cloudflare/worker.ts",
-  "compatibility_date": "2025-01-01",
+  "compatibility_date": "2026-08-26",
   "compatibility_flags": ["nodejs_compat"],
 
+  "observability": { "enabled": true },
+
   // Container roda a mesma imagem Docker do Express (ver Dockerfile).
-  // max_instances: 1 e sem sleepAfter curto -> container fica sempre ativo,
-  // preservando o comportamento atual de sessão (tokenStore em memória só
-  // é perdido em deploy, não em ociosidade).
+  // max_instances: 1 mantém uma única instância ativa, preservando o
+  // comportamento atual de sessão (o tokenStore em memória de routes/auth.ts
+  // só é perdido em deploy, não em ociosidade).
+  //
+  // ATENÇÃO: `containers` precisa de wrangler v4. Na v3 o deploy falha com
+  // `"containers" should be an object, but got an array` — foi exatamente
+  // assim que o primeiro deploy quebrou (run 32899231523).
   "containers": [
     {
       "class_name": "ApiServerContainer",
       "image": "./Dockerfile",
+      // O Dockerfile faz `COPY . .` e roda `pnpm install --filter
+      // @workspace/api-server...`, entao precisa da RAIZ do repo como
+      // contexto (pnpm-workspace.yaml, pnpm-lock.yaml, lib/db, lib/api-zod).
+      // O padrao do wrangler seria a pasta do proprio Dockerfile, o que
+      // quebraria o build da imagem. O .dockerignore da raiz ja exclui o que
+      // nao entra na imagem.
+      "image_build_context": "../..",
       "name": "atlas-api-server",
       "max_instances": 1,
       "instance_type": "basic"
@@ -27,10 +40,10 @@
 
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["ApiServerContainer"] }
-  ],
+  ]
 
   // Domínio final da API. Deixar comentado no primeiro deploy (publica só
-  // sob *.workers.dev) até o smoke test passar - depois descomentar e
+  // sob *.workers.dev) até o smoke test passar — depois descomentar e
   // configurar o Custom Domain no dashboard da Cloudflare.
   // "routes": [{ "pattern": "api.atlas.niadcon.com.br/*", "custom_domain": true }]
 }

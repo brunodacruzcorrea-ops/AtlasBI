@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "atlas-bi",
+  "compatibility_date": "2026-08-26",
+
+  "observability": { "enabled": true },
+
+  // Worker somente de assets estáticos (sem `main`): a Cloudflare serve o
+  // build do Vite direto da edge.
+  //
+  // `directory` casa com `build.outDir` do vite.config.ts (dist/public).
+  //
+  // `single-page-application` faz o fallback para index.html em qualquer rota
+  // não encontrada — necessário porque o roteamento é client-side (wouter:
+  // /dashboard, /ranking, /consultants, /sales, /goals, /users). Sem isso,
+  // dar F5 em /dashboard devolveria 404.
+  "assets": {
+    "directory": "./dist/public",
+    "not_found_handling": "single-page-application"
+  }
+
+  // Domínio de produção. Só descomentar no cutover, depois que o smoke test
+  // em *.workers.dev passar E o custom domain da API estiver de pé — hoje
+  // atlas.niadcon.com.br aponta para o Railway.
+  // "routes": [{ "pattern": "atlas.niadcon.com.br", "custom_domain": true }]
+}
