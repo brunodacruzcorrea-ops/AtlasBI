@@ -146,8 +146,11 @@ rollback é só DNS.
 - **Latência do banco.** O container vai falar com o Postgres pelo proxy TCP
   público do Railway, não mais pela rede interna. Vale medir; se incomodar,
   Hyperdrive na frente ou mover o banco resolvem.
-- **Typecheck quebrado no `main`.** `artifacts/atlas-bi` tem erros pré-existentes
-  (`Property 'photo' does not exist on type 'RankingEntry'` — a spec em
-  `lib/api-spec/openapi.yaml` não declara o campo que a API devolve). Não impede
-  o deploy, porque o build do Vite não faz typecheck, mas `pnpm run build` na
-  raiz falha.
+- **`mockup-sandbox` não builda sem `PORT` e `BASE_PATH`.** O `vite.config.ts`
+  dele exige essas variáveis, definidas pelo workflow do Replit. Isso faz
+  `pnpm run build` na raiz falhar fora do Replit. Não afeta o que é publicado:
+  Railway e os workflows daqui buildam `atlas-bi` e `api-server` direto.
+- **Vínculo usuário↔consultor é por e-mail.** Não existe chave estrangeira
+  entre as tabelas; a associação usada para decidir quem vê qual meta
+  individual compara os e-mails. Rode
+  `pnpm --filter @workspace/scripts run check-links` para ver quem não casa.
