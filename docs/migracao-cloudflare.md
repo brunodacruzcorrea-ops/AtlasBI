@@ -32,6 +32,10 @@ Estes passos exigem credenciais e não podem ser feitos pelo agente.
    - Secret `CLOUDFLARE_ACCOUNT_ID`
    - Variable `VITE_API_URL` — URL pública da API. **Entra no bundle em tempo de
      build**, não em runtime: trocar a URL exige novo build + deploy do front.
+   - Variable `CLOUDFLARE_DEPLOY_ENABLED` = `true` — os dois workflows ficam
+     dormentes até esta variável existir. É o último passo a dar: sem ela nada
+     é publicado na Cloudflare por engano; com ela, todo push no `main` que
+     toque os caminhos observados publica.
 
 ## Passo a passo
 
