@@ -1,0 +1,16 @@
+# Ignore específico da imagem da API (BuildKit dá precedência a
+# <dockerfile>.dockerignore sobre o .dockerignore da raiz do contexto).
+#
+# O contexto desse build é a raiz do repo, porque o Dockerfile precisa do
+# workspace pnpm. Os artefatos de frontend não entram na imagem da API, então
+# ficam de fora aqui — sem afetar o build do Railway, que usa o .dockerignore
+# da raiz.
+node_modules
+**/node_modules
+**/dist
+**/.tsbuildinfo
+.git
+artifacts/atlas-bi
+artifacts/mockup-sandbox
+attached_assets
+*.log
