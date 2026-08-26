@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, UserCog, ShieldCheck, KeyRound } from "lucide-react";
+import { Plus, Trash2, UserCog, ShieldCheck, KeyRound, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -46,8 +46,8 @@ import { useLocation } from "wouter";
 // Espelha os papeis aceitos pela API (artifacts/api-server/src/routes/users.ts).
 // Antes este campo era texto livre e qualquer valor digitado virava admin.
 const ROLES = [
-  { value: "admin", label: "Administrador", hint: "Gerencia usuários e edita consultores" },
-  { value: "viewer", label: "Visualizador", hint: "Somente leitura" },
+  { value: "admin", label: "Administrador", hint: "Acesso irrestrito" },
+  { value: "consultor", label: "Consultor", hint: "Somente leitura" },
 ] as const;
 
 const MIN_PASSWORD_LENGTH = 6;
@@ -100,6 +100,21 @@ async function createUser(data: {
   return res.json();
 }
 
+async function updateUser(
+  id: number,
+  data: { email?: string; role?: string },
+): Promise<void> {
+  const res = await fetch(apiUrl(`/users/${id}`), {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Erro ao atualizar usuário (HTTP ${res.status})`);
+  }
+}
+
 async function resetPassword(id: number, password: string): Promise<void> {
   const res = await fetch(apiUrl(`/users/${id}/password`), {
     method: "POST",
@@ -127,7 +142,7 @@ const userSchema = z.object({
   name: z.string().min(1, "Nome obrigatório"),
   email: z.string().email("E-mail inválido"),
   password: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres`),
-  role: z.enum(["admin", "viewer"], { message: "Selecione um cargo" }),
+  role: z.enum(["admin", "consultor"], { message: "Selecione um cargo" }),
 });
 
 export default function UsersPage() {
@@ -136,6 +151,9 @@ export default function UsersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<AppUser | null>(null);
   const [newPassword, setNewPassword] = useState("");
+  const [editTarget, setEditTarget] = useState<AppUser | null>(null);
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState<string>("consultor");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -147,7 +165,7 @@ export default function UsersPage() {
 
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
-    defaultValues: { name: "", email: "", password: "", role: "viewer" },
+    defaultValues: { name: "", email: "", password: "", role: "consultor" },
   });
 
   const createMutation = useMutation({
@@ -157,6 +175,19 @@ export default function UsersPage() {
       toast({ title: "Usuário cadastrado com sucesso" });
       setIsCreateOpen(false);
       form.reset();
+    },
+    onError: (error: Error) => {
+      toast({ title: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: { email?: string; role?: string } }) =>
+      updateUser(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["app-users"] });
+      toast({ title: "Usuário atualizado" });
+      closeEditDialog();
     },
     onError: (error: Error) => {
       toast({ title: error.message, variant: "destructive" });
@@ -193,12 +224,27 @@ export default function UsersPage() {
     createMutation.mutate(values);
   };
 
+  function openEditDialog(user: AppUser) {
+    setEditTarget(user);
+    setEditEmail(user.email);
+    setEditRole(user.role);
+  }
+
+  function closeEditDialog() {
+    setEditTarget(null);
+    setEditEmail("");
+  }
+
   function closeResetDialog() {
     setResetTarget(null);
     setNewPassword("");
   }
 
   const passwordTooShort = newPassword.length < MIN_PASSWORD_LENGTH;
+  const emailInvalid = !editEmail.includes("@") || editEmail.trim().length < 3;
+  // Rebaixar a si mesmo tiraria o acesso a esta tela na hora; a API tambem
+  // recusa, mas nem vale oferecer a opcao.
+  const editingSelf = editTarget?.id === currentUser?.id;
 
   if (!isAdmin) {
     return (
@@ -380,6 +426,16 @@ export default function UsersPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Editar e-mail e cargo"
+                        aria-label={`Editar ${u.name}`}
+                        onClick={() => openEditDialog(u)}
+                        className="h-8 w-8 hover:bg-accent/10 hover:text-accent"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         title="Redefinir senha"
                         aria-label={`Redefinir senha de ${u.name}`}
                         onClick={() => {
@@ -430,6 +486,101 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      <Dialog
+        open={editTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) closeEditDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase">
+              Editar usuário
+            </DialogTitle>
+          </DialogHeader>
+
+          <form
+            className="space-y-4 mt-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!editTarget || emailInvalid) return;
+              updateMutation.mutate({
+                id: editTarget.id,
+                data: { email: editEmail.trim(), role: editRole },
+              });
+            }}
+          >
+            <p className="text-sm text-muted-foreground">
+              <span className="font-bold text-foreground">{editTarget?.name}</span>
+            </p>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="edit-email"
+                className="text-xs font-bold uppercase text-muted-foreground"
+              >
+                E-mail
+              </label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editEmail}
+                onChange={(event) => setEditEmail(event.target.value)}
+                className="bg-muted/50 focus-visible:ring-primary"
+              />
+              {editEmail.length > 0 && emailInvalid && (
+                <p className="text-xs font-medium text-destructive">
+                  Informe um e-mail válido
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-muted-foreground">
+                Cargo
+              </label>
+              <Select
+                value={editRole}
+                onValueChange={setEditRole}
+                disabled={editingSelf}
+              >
+                <SelectTrigger className="bg-muted/50 focus:ring-primary">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      <span className="font-medium">{role.label}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        {role.hint}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {editingSelf && (
+                <p className="text-xs font-medium text-muted-foreground">
+                  Você não pode alterar o próprio cargo.
+                </p>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={closeEditDialog}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={emailInvalid || updateMutation.isPending}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+              >
+                {updateMutation.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={resetTarget !== null}

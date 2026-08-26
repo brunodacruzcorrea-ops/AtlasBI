@@ -76,12 +76,96 @@ router.post("/users", ensureAuth, ensureAdmin, async (req, res): Promise<void> =
       name,
       email: normalizedEmail,
       passwordHash: hashPassword(password),
-      role: isValidRole(role) ? role : "viewer",
+      role: isValidRole(role) ? role : "consultor",
     })
     .returning();
 
   res.status(201).json(mapUser(user));
 });
+
+router.patch(
+  "/users/:id",
+  ensureAuth,
+  ensureAdmin,
+  async (req, res): Promise<void> => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      res.status(400).json({ error: "ID inválido" });
+      return;
+    }
+
+    const { email, role } = req.body ?? {};
+
+    if (email === undefined && role === undefined) {
+      res.status(400).json({ error: "Nada para atualizar" });
+      return;
+    }
+
+    // Rebaixar o proprio usuario tiraria o acesso a esta tela na mesma
+    // requisicao, sem ninguem para desfazer. Mesma protecao ja aplicada na
+    // remocao.
+    if (role !== undefined && id === req.userId && role !== "admin") {
+      res
+        .status(400)
+        .json({ error: "Você não pode remover seu próprio acesso de administrador" });
+      return;
+    }
+
+    if (role !== undefined && !isValidRole(role)) {
+      res
+        .status(400)
+        .json({ error: `Cargo inválido. Use um destes: ${ROLES.join(", ")}` });
+      return;
+    }
+
+    const updateData: { email?: string; role?: string } = {};
+
+    if (email !== undefined) {
+      const normalizedEmail = normalizeEmail(String(email));
+
+      if (!normalizedEmail.includes("@")) {
+        res.status(400).json({ error: "E-mail inválido" });
+        return;
+      }
+
+      // Duplicata checada sem depender de caixa e ignorando o proprio
+      // registro, para que salvar sem trocar o e-mail nao acuse conflito.
+      const [existing] = await db
+        .select()
+        .from(usersTable)
+        .where(sql`lower(${usersTable.email}) = ${normalizedEmail}`)
+        .limit(1);
+
+      if (existing && existing.id !== id) {
+        res.status(409).json({ error: "Já existe um usuário com esse e-mail" });
+        return;
+      }
+
+      updateData.email = normalizedEmail;
+    }
+
+    if (role !== undefined) updateData.role = role;
+
+    const [updated] = await db
+      .update(usersTable)
+      .set(updateData)
+      .where(eq(usersTable.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Usuário não encontrado" });
+      return;
+    }
+
+    req.log.info(
+      { targetUserId: id, byUserId: req.userId, fields: Object.keys(updateData) },
+      "User updated",
+    );
+
+    res.json(mapUser(updated));
+  },
+);
 
 router.post(
   "/users/:id/password",

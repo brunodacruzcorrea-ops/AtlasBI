@@ -16,11 +16,15 @@ export function normalizeEmail(email: string): string {
 }
 
 /**
- * Papeis aceitos. `admin` gerencia usuarios e edita consultores; `viewer` so
- * visualiza. Antes o campo era texto livre com default "admin", o que fazia
- * todo usuario criado virar administrador.
+ * Papeis aceitos. `admin` tem acesso irrestrito (gerencia usuarios e edita
+ * consultores); `consultor` so visualiza.
+ *
+ * Os nomes vem do que ja existe em producao: a base grava "admin" e
+ * "consultor" em minusculas, e a tela apenas capitaliza na exibicao. Antes o
+ * campo era texto livre com default "admin", o que fazia todo usuario criado
+ * virar administrador.
  */
-export const ROLES = ["admin", "viewer"] as const;
+export const ROLES = ["admin", "consultor"] as const;
 
 export type Role = (typeof ROLES)[number];
 

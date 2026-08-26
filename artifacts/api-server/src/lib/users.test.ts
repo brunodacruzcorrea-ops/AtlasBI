@@ -29,6 +29,7 @@ test("isValidRole accepts only the known roles", () => {
   // Antes o cargo era texto livre e qualquer valor era aceito.
   assert.equal(isValidRole("Admin"), false);
   assert.equal(isValidRole("gerente"), false);
+  assert.equal(isValidRole("viewer"), false);
   assert.equal(isValidRole(""), false);
   assert.equal(isValidRole(undefined), false);
   assert.equal(isValidRole(null), false);
