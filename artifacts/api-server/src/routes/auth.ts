@@ -1,10 +1,11 @@
 import { Router, type IRouter } from "express";
 import { eq, sql } from "drizzle-orm";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, consultantsTable } from "@workspace/db";
 import { LoginBody, LoginResponse, GetMeResponse } from "@workspace/api-zod";
 import { logger } from "../lib/logger";
 import crypto from "crypto";
 import { normalizeEmail } from "../lib/users";
+import type { Viewer } from "../lib/visibility";
 
 const router: IRouter = Router();
 
@@ -137,6 +138,38 @@ export function ensureAuth(req: any, res: any, next: any): void {
   }
   req.userId = userId;
   next();
+}
+
+/**
+ * Descobre o contexto de visibilidade do usuário logado.
+ *
+ * Não existe vínculo explícito entre usuários e consultores no banco, então a
+ * associação é feita pelo e-mail — comparado em minúsculas dos dois lados,
+ * porque a coluna de consultores é livre e nem sempre foi preenchida com a
+ * mesma caixa. Consultor sem e-mail cadastrado, ou com e-mail diferente do
+ * usuário, não casa: a pessoa vê a meta de equipe mas não a própria meta
+ * individual. `pnpm --filter @workspace/scripts run check-links` lista esses
+ * casos.
+ */
+export async function resolveViewer(userId: number | undefined): Promise<Viewer> {
+  if (userId === undefined) return { isAdmin: false, consultantId: null };
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
+
+  if (!user) return { isAdmin: false, consultantId: null };
+  if (user.role === "admin") return { isAdmin: true, consultantId: null };
+
+  const [consultant] = await db
+    .select({ id: consultantsTable.id })
+    .from(consultantsTable)
+    .where(sql`lower(${consultantsTable.email}) = ${normalizeEmail(user.email)}`)
+    .limit(1);
+
+  return { isAdmin: false, consultantId: consultant?.id ?? null };
 }
 
 export async function ensureAdmin(

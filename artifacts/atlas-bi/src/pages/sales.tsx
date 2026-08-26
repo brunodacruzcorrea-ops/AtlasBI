@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/components/auth-provider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -91,6 +92,10 @@ const saleSchema = z.object({
 });
 
 export default function Sales() {
+  // Incluir venda é liberado para todos, de propósito — é o registro do dia a
+  // dia da equipe. Só corrigir e excluir são de admin, espelhando ensureAdmin
+  // no PATCH e DELETE de /sales.
+  const { isAdmin } = useAuth();
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
@@ -633,6 +638,7 @@ export default function Sales() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {isAdmin && (<>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -671,6 +677,7 @@ export default function Sales() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        </>)}
                       </div>
                     </td>
                   </motion.tr>

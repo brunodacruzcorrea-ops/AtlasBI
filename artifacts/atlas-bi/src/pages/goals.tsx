@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useListGoals, getListGoalsQueryKey, useListConsultants, getListConsultantsQueryKey, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@workspace/api-client-react";
 import { Plus, Edit2, Trash2, Target, Calendar as CalendarIcon, Users } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +36,10 @@ export default function Goals() {
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  // A API já recusa escrita de não-admin (ensureAdmin em POST/PATCH/DELETE de
+  // /goals) e já omite metas individuais alheias do GET. Aqui é só para não
+  // oferecer botão que resultaria em 403.
+  const { isAdmin } = useAuth();
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -202,12 +207,14 @@ export default function Goals() {
               setIsCreateOpen(true);
             }
           }}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 px-6 rounded-lg gap-2 shadow-sm">
-                <Target className="w-5 h-5 text-accent" />
-                Nova Meta
-              </Button>
-            </DialogTrigger>
+            {isAdmin && (
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 px-6 rounded-lg gap-2 shadow-sm">
+                  <Target className="w-5 h-5 text-accent" />
+                  Nova Meta
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle className="text-xl font-black uppercase">{editingId ? "Edit Goal" : "Nova Meta"}</DialogTitle>
@@ -375,10 +382,12 @@ export default function Goals() {
                       <h3 className="font-bold text-lg uppercase tracking-wide">Meta Global</h3>
                       {goal.description && <p className="text-xs text-white/75 mt-1">{goal.description}</p>}
                     </div>
+                    {isAdmin && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => handleEdit(goal)} className="p-1.5 hover:bg-white/20 rounded-md transition-colors"><Edit2 className="w-4 h-4" /></button>
                       <button onClick={() => handleDelete(goal.id)} className="p-1.5 hover:bg-destructive/80 rounded-md transition-colors"><Trash2 className="w-4 h-4" /></button>
                     </div>
+                    )}
                   </div>
                   
                   <div>
@@ -453,6 +462,7 @@ export default function Goals() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex itens-center justify-end gap-2">
+                            {isAdmin && (<>
                             <Button variant="ghost" size="icon" onClick={() => handleEdit(goal)} className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
                               <Edit2 className="w-4 h-4" />
                             </Button>
@@ -477,6 +487,7 @@ export default function Goals() {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
+                            </>)}
                           </div>
                         </td>
                       </motion.tr>

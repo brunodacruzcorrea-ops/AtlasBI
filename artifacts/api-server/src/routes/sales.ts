@@ -13,7 +13,7 @@ import {
   ListSalesResponse,
   ListSalesQueryParams,
 } from "@workspace/api-zod";
-import { ensureAuth } from "./auth";
+import { ensureAuth, ensureAdmin } from "./auth";
 import { toDatabaseDate } from "./sale-date";
 import { broadcastSaleCreated } from "./sales-events";
 
@@ -78,6 +78,9 @@ router.get("/sales", ensureAuth, async (req, res): Promise<void> => {
   res.json(ListSalesResponse.parse(mapped));
 });
 
+// Inclusão de venda é liberada para qualquer usuário autenticado, de
+// propósito: é o registro do dia a dia da equipe. Só a correção e a exclusão
+// são restritas a admin, logo abaixo.
 router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
   const parsed = CreateSaleBody.safeParse(req.body);
   if (!parsed.success) {
@@ -136,7 +139,7 @@ router.get("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
   res.json(GetSaleResponse.parse(mapSale(row.sale, row.consultantName)));
 });
 
-router.patch("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
+router.patch("/sales/:id", ensureAuth, ensureAdmin, async (req, res): Promise<void> => {
   const params = UpdateSaleParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -183,7 +186,7 @@ router.patch("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
   res.json(UpdateSaleResponse.parse(mapSale(sale, consultant?.name)));
 });
 
-router.delete("/sales/:id", ensureAuth, async (req, res): Promise<void> => {
+router.delete("/sales/:id", ensureAuth, ensureAdmin, async (req, res): Promise<void> => {
   const params = DeleteSaleParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

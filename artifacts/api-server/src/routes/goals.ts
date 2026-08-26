@@ -11,7 +11,8 @@ import {
   ListGoalsResponse,
   ListGoalsQueryParams,
 } from "@workspace/api-zod";
-import { ensureAuth } from "./auth";
+import { ensureAuth, ensureAdmin, resolveViewer } from "./auth";
+import { filterGoals } from "../lib/visibility";
 
 const router: IRouter = Router();
 
@@ -48,10 +49,15 @@ router.get("/goals", ensureAuth, async (req, res): Promise<void> => {
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(goalsTable.year, goalsTable.month);
 
-  res.json(ListGoalsResponse.parse(goalsRows.map((r) => mapGoal(r.goal, r.consultantName))));
+  // Metas individuais alheias são removidas aqui, no servidor: filtrar só na
+  // tela deixaria os valores viajando na resposta.
+  const viewer = await resolveViewer(req.userId);
+  const visible = filterGoals(viewer, goalsRows.map((r) => mapGoal(r.goal, r.consultantName)));
+
+  res.json(ListGoalsResponse.parse(visible));
 });
 
-router.post("/goals", ensureAuth, async (req, res): Promise<void> => {
+router.post("/goals", ensureAuth, ensureAdmin, async (req, res): Promise<void> => {
   const parsed = CreateGoalBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -82,7 +88,7 @@ router.post("/goals", ensureAuth, async (req, res): Promise<void> => {
   res.status(201).json(CreateGoalResponse.parse(mapGoal(goal, consultantName)));
 });
 
-router.patch("/goals/:id", ensureAuth, async (req, res): Promise<void> => {
+router.patch("/goals/:id", ensureAuth, ensureAdmin, async (req, res): Promise<void> => {
   const params = UpdateGoalParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -123,7 +129,7 @@ router.patch("/goals/:id", ensureAuth, async (req, res): Promise<void> => {
   res.json(UpdateGoalResponse.parse(mapGoal(goal, consultantName)));
 });
 
-router.delete("/goals/:id", ensureAuth, async (req, res): Promise<void> => {
+router.delete("/goals/:id", ensureAuth, ensureAdmin, async (req, res): Promise<void> => {
   const params = DeleteGoalParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
