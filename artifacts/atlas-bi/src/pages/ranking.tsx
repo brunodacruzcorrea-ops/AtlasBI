@@ -4,6 +4,20 @@ import { formatBRL, formatPercent, cn } from "@/lib/utils";
 import { Trophy, Medal, Search, Filter, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { motion } from "framer-motion";
 
+// A API devolve goalAchievementPercent ja em pontos percentuais (85.3 = 85,3%).
+// Estas duas funcoes existem para nao repetir essa suposicao no meio do JSX:
+// antes a barra multiplicava o valor por 100 e comparava com 1, entao qualquer
+// consultor acima de 1% aparecia com a barra cheia e pintado de verde.
+const GOAL_REACHED_PERCENT = 100;
+
+function goalReached(percent: number | null | undefined): boolean {
+  return (percent ?? 0) >= GOAL_REACHED_PERCENT;
+}
+
+function goalBarWidth(percent: number | null | undefined): number {
+  return Math.min(GOAL_REACHED_PERCENT, Math.max(0, percent ?? 0));
+}
+
 export default function Ranking() {
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -231,23 +245,32 @@ export default function Ranking() {
                         {entry.totalQuantity} itens
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <div className="flex flex-col items-end gap-1">
-                          <span className={cn(
-                            "font-bold",
-                            (entry.goalAchievementPercent || 0) >= 1 ? "text-emerald-500" : "text-accent"
-                          )}>
-                            {formatPercent(entry.goalAchievementPercent || 0)}
+                        {entry.goalAmount == null ? (
+                          <span className="text-xs font-medium text-muted-foreground/70">
+                            Sem meta definida
                           </span>
-                          <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className={cn(
-                                "h-full rounded-full",
-                                (entry.goalAchievementPercent || 0) >= 1 ? "bg-emerald-500" : "bg-accent"
-                              )} 
-                              style={{ width: `${Math.min(100, (entry.goalAchievementPercent || 0) * 100)}%` }} 
-                            />
+                        ) : (
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={cn(
+                              "font-bold",
+                              goalReached(entry.goalAchievementPercent) ? "text-emerald-500" : "text-accent"
+                            )}>
+                              {formatPercent(entry.goalAchievementPercent ?? 0)}
+                            </span>
+                            <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={cn(
+                                  "h-full rounded-full",
+                                  goalReached(entry.goalAchievementPercent) ? "bg-emerald-500" : "bg-accent"
+                                )}
+                                style={{ width: `${goalBarWidth(entry.goalAchievementPercent)}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-medium text-muted-foreground">
+                              meta {formatBRL(entry.goalAmount)}
+                            </span>
                           </div>
-                        </div>
+                        )}
                       </td>
                     </motion.tr>
                   );

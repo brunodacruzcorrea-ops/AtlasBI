@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, UserCog, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, UserCog, ShieldCheck, KeyRound, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -35,6 +42,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth-provider";
 import { useLocation } from "wouter";
+
+// Espelha os papeis aceitos pela API (artifacts/api-server/src/routes/users.ts).
+// Antes este campo era texto livre e qualquer valor digitado virava admin.
+const ROLES = [
+  { value: "admin", label: "Administrador", hint: "Acesso irrestrito" },
+  { value: "consultor", label: "Consultor", hint: "Somente leitura" },
+] as const;
+
+const MIN_PASSWORD_LENGTH = 6;
 
 type AppUser = {
   id: number;
@@ -84,6 +100,33 @@ async function createUser(data: {
   return res.json();
 }
 
+async function updateUser(
+  id: number,
+  data: { email?: string; role?: string },
+): Promise<void> {
+  const res = await fetch(apiUrl(`/users/${id}`), {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Erro ao atualizar usuário (HTTP ${res.status})`);
+  }
+}
+
+async function resetPassword(id: number, password: string): Promise<void> {
+  const res = await fetch(apiUrl(`/users/${id}/password`), {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ password }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Erro ao redefinir senha (HTTP ${res.status})`);
+  }
+}
+
 async function deleteUser(id: number): Promise<void> {
   const res = await fetch(apiUrl(`/users/${id}`), {
     method: "DELETE",
@@ -98,18 +141,21 @@ async function deleteUser(id: number): Promise<void> {
 const userSchema = z.object({
   name: z.string().min(1, "Nome obrigatório"),
   email: z.string().email("E-mail inválido"),
-  password: z.string().min(6, "Mínimo de 6 caracteres"),
-  role: z.string().min(1, "Cargo obrigatório"),
+  password: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo de ${MIN_PASSWORD_LENGTH} caracteres`),
+  role: z.enum(["admin", "consultor"], { message: "Selecione um cargo" }),
 });
 
 export default function UsersPage() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isAdmin } = useAuth();
   const [, setLocation] = useLocation();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [resetTarget, setResetTarget] = useState<AppUser | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [editTarget, setEditTarget] = useState<AppUser | null>(null);
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState<string>("consultor");
   const queryClient = useQueryClient();
   const { toast } = useToast();
-
-  const isAdmin = currentUser?.role === "admin";
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["app-users"],
@@ -119,7 +165,7 @@ export default function UsersPage() {
 
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
-    defaultValues: { name: "", email: "", password: "", role: "admin" },
+    defaultValues: { name: "", email: "", password: "", role: "consultor" },
   });
 
   const createMutation = useMutation({
@@ -129,6 +175,34 @@ export default function UsersPage() {
       toast({ title: "Usuário cadastrado com sucesso" });
       setIsCreateOpen(false);
       form.reset();
+    },
+    onError: (error: Error) => {
+      toast({ title: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: { email?: string; role?: string } }) =>
+      updateUser(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["app-users"] });
+      toast({ title: "Usuário atualizado" });
+      closeEditDialog();
+    },
+    onError: (error: Error) => {
+      toast({ title: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({ id, password }: { id: number; password: string }) =>
+      resetPassword(id, password),
+    onSuccess: () => {
+      toast({
+        title: "Senha redefinida",
+        description: `${resetTarget?.name} precisa entrar novamente com a nova senha.`,
+      });
+      closeResetDialog();
     },
     onError: (error: Error) => {
       toast({ title: error.message, variant: "destructive" });
@@ -149,6 +223,28 @@ export default function UsersPage() {
   const onSubmit = (values: z.infer<typeof userSchema>) => {
     createMutation.mutate(values);
   };
+
+  function openEditDialog(user: AppUser) {
+    setEditTarget(user);
+    setEditEmail(user.email);
+    setEditRole(user.role);
+  }
+
+  function closeEditDialog() {
+    setEditTarget(null);
+    setEditEmail("");
+  }
+
+  function closeResetDialog() {
+    setResetTarget(null);
+    setNewPassword("");
+  }
+
+  const passwordTooShort = newPassword.length < MIN_PASSWORD_LENGTH;
+  const emailInvalid = !editEmail.includes("@") || editEmail.trim().length < 3;
+  // Rebaixar a si mesmo tiraria o acesso a esta tela na hora; a API tambem
+  // recusa, mas nem vale oferecer a opcao.
+  const editingSelf = editTarget?.id === currentUser?.id;
 
   if (!isAdmin) {
     return (
@@ -251,9 +347,23 @@ export default function UsersPage() {
                       <FormLabel className="text-xs font-bold uppercase text-muted-foreground">
                         Cargo
                       </FormLabel>
-                      <FormControl>
-                        <Input placeholder="admin" {...field} className="bg-muted/50 focus-visible:ring-primary" />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-muted/50 focus:ring-primary">
+                            <SelectValue placeholder="Selecione o cargo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {ROLES.map((role) => (
+                            <SelectItem key={role.value} value={role.value}>
+                              <span className="font-medium">{role.label}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {role.hint}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -312,11 +422,37 @@ export default function UsersPage() {
                       {new Date(u.createdAt).toLocaleDateString("pt-BR")}
                     </td>
                     <td className="px-6 py-4 text-right">
+                      <div className="inline-flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Editar e-mail e cargo"
+                        aria-label={`Editar ${u.name}`}
+                        onClick={() => openEditDialog(u)}
+                        className="h-8 w-8 hover:bg-accent/10 hover:text-accent"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Redefinir senha"
+                        aria-label={`Redefinir senha de ${u.name}`}
+                        onClick={() => {
+                          setResetTarget(u);
+                          setNewPassword("");
+                        }}
+                        className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                      >
+                        <KeyRound className="w-4 h-4" />
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
+                            title="Remover usuário"
+                            aria-label={`Remover ${u.name}`}
                             disabled={u.id === currentUser?.id}
                             className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
                           >
@@ -341,6 +477,7 @@ export default function UsersPage() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -349,6 +486,171 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      <Dialog
+        open={editTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) closeEditDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase">
+              Editar usuário
+            </DialogTitle>
+          </DialogHeader>
+
+          <form
+            className="space-y-4 mt-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!editTarget || emailInvalid) return;
+              updateMutation.mutate({
+                id: editTarget.id,
+                data: { email: editEmail.trim(), role: editRole },
+              });
+            }}
+          >
+            <p className="text-sm text-muted-foreground">
+              <span className="font-bold text-foreground">{editTarget?.name}</span>
+            </p>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="edit-email"
+                className="text-xs font-bold uppercase text-muted-foreground"
+              >
+                E-mail
+              </label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editEmail}
+                onChange={(event) => setEditEmail(event.target.value)}
+                className="bg-muted/50 focus-visible:ring-primary"
+              />
+              {editEmail.length > 0 && emailInvalid && (
+                <p className="text-xs font-medium text-destructive">
+                  Informe um e-mail válido
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-muted-foreground">
+                Cargo
+              </label>
+              <Select
+                value={editRole}
+                onValueChange={setEditRole}
+                disabled={editingSelf}
+              >
+                <SelectTrigger className="bg-muted/50 focus:ring-primary">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      <span className="font-medium">{role.label}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        {role.hint}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {editingSelf && (
+                <p className="text-xs font-medium text-muted-foreground">
+                  Você não pode alterar o próprio cargo.
+                </p>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={closeEditDialog}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={emailInvalid || updateMutation.isPending}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+              >
+                {updateMutation.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={resetTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) closeResetDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase">
+              Redefinir senha
+            </DialogTitle>
+          </DialogHeader>
+
+          <form
+            className="space-y-4 mt-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!resetTarget || passwordTooShort) return;
+              resetPasswordMutation.mutate({
+                id: resetTarget.id,
+                password: newPassword,
+              });
+            }}
+          >
+            <p className="text-sm text-muted-foreground">
+              Defina uma nova senha para{" "}
+              <span className="font-bold text-foreground">{resetTarget?.name}</span>{" "}
+              ({resetTarget?.email}). As sessões abertas dessa pessoa serão
+              encerradas.
+            </p>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="new-password"
+                className="text-xs font-bold uppercase text-muted-foreground"
+              >
+                Nova senha
+              </label>
+              <Input
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                placeholder={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres`}
+                className="bg-muted/50 focus-visible:ring-primary"
+              />
+              {newPassword.length > 0 && passwordTooShort && (
+                <p className="text-xs font-medium text-destructive">
+                  Mínimo de {MIN_PASSWORD_LENGTH} caracteres
+                </p>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={closeResetDialog}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={passwordTooShort || resetPasswordMutation.isPending}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+              >
+                {resetPasswordMutation.isPending ? "Salvando..." : "Redefinir senha"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

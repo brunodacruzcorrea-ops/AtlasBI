@@ -29,11 +29,28 @@ const PROD_ORIGIN = "https://atlas.niadcon.com.br";
 const PREVIEW_ORIGIN_RE = /^https:\/\/[a-z0-9-]+\.atlas-bi\.pages\.dev$/;
 const LOCAL_ORIGIN_RE = /^http:\/\/localhost:\d+$/;
 
+// Origens extras liberadas por configuracao, separadas por virgula. Usado
+// durante a migracao para a Cloudflare: o front roda em
+// https://atlas-bi.<subdominio>.workers.dev antes do cutover de DNS, e esse
+// host nao casa com nenhum dos padroes acima. Comparacao e por igualdade
+// exata de origem — nada de wildcard em *.workers.dev, que liberaria
+// qualquer Worker de qualquer conta.
+const EXTRA_ORIGINS = new Set(
+  (process.env.EXTRA_CORS_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+);
+
 app.use(
   cors({
     origin(origin, callback) {
       if (!origin) return callback(null, true);
-      if (origin === PROD_ORIGIN || PREVIEW_ORIGIN_RE.test(origin)) {
+      if (
+        origin === PROD_ORIGIN ||
+        PREVIEW_ORIGIN_RE.test(origin) ||
+        EXTRA_ORIGINS.has(origin)
+      ) {
         return callback(null, true);
       }
       if (

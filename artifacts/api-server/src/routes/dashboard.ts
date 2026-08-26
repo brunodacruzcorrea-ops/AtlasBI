@@ -9,7 +9,8 @@ import {
   GetDashboardRankingQueryParams,
   GetProductionChartQueryParams,
 } from "@workspace/api-zod";
-import { ensureAuth } from "./auth";
+import { ensureAuth, resolveViewer } from "./auth";
+import { maskRankingGoals } from "../lib/visibility";
 
 const router: IRouter = Router();
 
@@ -196,7 +197,9 @@ router.get("/dashboard/ranking", ensureAuth, async (req, res): Promise<void> => 
     };
   });
 
-  res.json(GetDashboardRankingResponse.parse(ranking));
+  const viewer = await resolveViewer(req.userId);
+
+  res.json(GetDashboardRankingResponse.parse(maskRankingGoals(viewer, ranking)));
 });
 
 router.get("/dashboard/production-chart", ensureAuth, async (req, res): Promise<void> => {

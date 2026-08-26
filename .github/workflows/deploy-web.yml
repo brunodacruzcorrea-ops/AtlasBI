@@ -1,0 +1,51 @@
+name: Deploy Web to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "artifacts/atlas-bi/**"
+      - "lib/api-client-react/**"
+      - "lib/api-zod/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    # Dormente até a migração para a Cloudflare ser de fato ligada. Sem isso o
+    # workflow dispararia em todo push que toque estes caminhos e falharia por
+    # falta de CLOUDFLARE_API_TOKEN, deixando um X vermelho no main que parece
+    # deploy quebrado — mas o site é publicado pelo Railway, não por aqui.
+    #
+    # Para ligar: crie a variável de repositório CLOUDFLARE_DEPLOY_ENABLED com
+    # o valor "true" (Settings > Secrets and variables > Actions > Variables),
+    # depois de configurar os secrets. Ver docs/migracao-cloudflare.md.
+    if: vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # VITE_API_URL entra no bundle em tempo de build (import.meta.env), nao
+      # em runtime — trocar a URL da API exige um novo build + deploy.
+      - name: Build
+        working-directory: artifacts/atlas-bi
+        run: pnpm run build
+        env:
+          NODE_ENV: production
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Deploy static assets
+        working-directory: artifacts/atlas-bi
+        run: pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

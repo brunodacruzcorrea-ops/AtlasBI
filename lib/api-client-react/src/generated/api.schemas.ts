@@ -52,6 +52,8 @@ export interface ConsultantInput {
   /** @minLength 1 */
   name: string;
   email: string;
+  /** @nullable */
+  photo?: string | null;
   role?: string;
   team?: string;
   active?: boolean;
@@ -60,6 +62,8 @@ export interface ConsultantInput {
 export interface ConsultantUpdate {
   name?: string;
   email?: string;
+  /** @nullable */
+  photo?: string | null;
   role?: string;
   team?: string;
   active?: boolean;
@@ -154,6 +158,8 @@ export interface RankingEntry {
   position: number;
   consultantId: number;
   consultantName: string;
+  /** @nullable */
+  photo?: string | null;
   totalAmount: number;
   totalQuantity: number;
   /** @nullable */

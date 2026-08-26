@@ -4,6 +4,8 @@ interface Env {
   API_CONTAINER: DurableObjectNamespace<ApiServerContainer>;
   DATABASE_URL: string;
   SESSION_SECRET: string;
+  // Opcional. Origens extras para o allowlist de CORS (ver src/app.ts).
+  EXTRA_CORS_ORIGINS?: string;
 }
 
 export class ApiServerContainer extends Container<Env> {
@@ -18,6 +20,7 @@ export class ApiServerContainer extends Container<Env> {
   envVars = {
     DATABASE_URL: this.env.DATABASE_URL,
     SESSION_SECRET: this.env.SESSION_SECRET,
+    EXTRA_CORS_ORIGINS: this.env.EXTRA_CORS_ORIGINS ?? "",
     NODE_ENV: "production",
   };
 }

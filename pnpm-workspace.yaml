@@ -73,6 +73,9 @@ onlyBuiltDependencies:
   - esbuild
   - msw
   - unrs-resolver
+  # Runtime da Cloudflare, dependencia do wrangler. Sem o postinstall o
+  # binario nao e preparado e o wrangler falha ao rodar.
+  - workerd
 
 overrides:
   # replit uses linux-x64 only, we can exclude all other platforms

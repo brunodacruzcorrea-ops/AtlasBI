@@ -316,7 +316,12 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold text-foreground">{formatBRL(entry.totalAmount)}</div>
-                      <div className="text-xs font-medium text-accent">{formatPercent((entry.goalAchievementPercent || 0))}</div>
+                      {/* Sem meta cadastrada nao e 0% atingido: sao coisas diferentes. */}
+                      <div className="text-xs font-medium text-accent">
+                        {entry.goalAmount == null
+                          ? "Sem meta"
+                          : formatPercent(entry.goalAchievementPercent ?? 0)}
+                      </div>
                     </div>
                   </div>
                 ))}
