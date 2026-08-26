@@ -82,12 +82,12 @@ function formatSaleDate(value: Date | string): string {
 }
 
 const saleSchema = z.object({
-  consultantId: z.coerce.number().min(1, "Consultant is required"),
-  product: z.string().min(1, "Product name is required"),
-  segment: z.string().min(1, "Segment is required"),
-  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
-  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
-  saleDate: z.string().min(1, "Date is required"),
+  consultantId: z.coerce.number().min(1, "Consultor é obrigatório"),
+  product: z.string().min(1, "Nome do produto é obrigatório"),
+  segment: z.string().min(1, "Segmento é obrigatório"),
+  amount: z.coerce.number().min(0.01, "Valor deve ser maior que zero"),
+  quantity: z.coerce.number().min(1, "Quantidade deve ser ao menos 1"),
+  saleDate: z.string().min(1, "Data é obrigatória"),
   notes: z.string().optional(),
 });
 
@@ -183,7 +183,7 @@ export default function Sales() {
               queryKey: ["/api/dashboard"],
             });
 
-            toast({ title: "Sale updated successfully" });
+            toast({ title: "Venda atualizada" });
             handleCloseDialog();
           },
           onError: () => {
@@ -216,7 +216,7 @@ export default function Sales() {
               queryKey: ["/api/dashboard"],
             });
 
-            toast({ title: "Sale registered successfully" });
+            toast({ title: "Venda registrada" });
             handleCloseDialog();
           },
           onError: () => {
@@ -261,7 +261,7 @@ export default function Sales() {
             }),
           });
           queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
-          toast({ title: "Sale deleted successfully", variant: "destructive" });
+          toast({ title: "Venda excluída", variant: "destructive" });
         },
       },
     );
@@ -304,7 +304,7 @@ export default function Sales() {
             Central de Vendas
           </h1>
           <p className="text-muted-foreground font-medium mt-1">
-            Record and track commercial production
+            Registre e acompanhe a produção comercial
           </p>
         </div>
 
@@ -318,13 +318,13 @@ export default function Sales() {
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 px-6 rounded-lg gap-2 shadow-sm">
               <Plus className="w-5 h-5" />
-              Register Sale
+              Registrar Venda
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle className="text-xl font-black uppercase">
-                {editingId ? "Edit Sale" : "Register Sale"}
+                {editingId ? "Edit Sale" : "Registrar Venda"}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
@@ -346,7 +346,7 @@ export default function Sales() {
                       >
                         <FormControl>
                           <SelectTrigger className="bg-muted/50 focus:ring-primary">
-                            <SelectValue placeholder="Select consultant" />
+                            <SelectValue placeholder="Selecione o consultor" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -374,7 +374,7 @@ export default function Sales() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enterprise Plan"
+                          placeholder="Plano Empresarial"
                           {...field}
                           className="bg-muted/50 focus-visible:ring-primary"
                         />
@@ -394,7 +394,7 @@ export default function Sales() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enterprise"
+                          placeholder="Empresarial"
                           {...field}
                           className="bg-muted/50 focus-visible:ring-primary"
                         />
@@ -478,7 +478,7 @@ export default function Sales() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Additional details..."
+                          placeholder="Detalhes adicionais..."
                           {...field}
                           className="bg-muted/50 focus-visible:ring-primary"
                         />
@@ -503,7 +503,7 @@ export default function Sales() {
                     }
                     className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                   >
-                    {editingId ? "Save Changes" : "Register Sale"}
+                    {editingId ? "Save Changes" : "Registrar Venda"}
                   </Button>
                 </div>
               </form>
@@ -548,10 +548,10 @@ export default function Sales() {
               onValueChange={setConsultantFilter}
             >
               <SelectTrigger className="w-full sm:w-48 bg-background">
-                <SelectValue placeholder="All Consultants" />
+                <SelectValue placeholder="Todos os consultores" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Consultants</SelectItem>
+                <SelectItem value="all">Todos os consultores</SelectItem>
                 {consultants?.map((c) => (
                   <SelectItem key={c.id} value={String(c.id)}>
                     {c.name}
@@ -563,7 +563,7 @@ export default function Sales() {
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search products..."
+                placeholder="Buscar produtos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9 bg-background border-border"
@@ -659,20 +659,19 @@ export default function Sales() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Sale?</AlertDialogTitle>
+                              <AlertDialogTitle>Excluir venda?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to remove this sale of{" "}
-                                {formatBRL(sale.amount)}? This will recalculate
-                                the dashboard and rankings.
+                                Remover esta venda de {formatBRL(sale.amount)}?
+                                O dashboard e os rankings serão recalculados.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(sale.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Delete
+                                Excluir
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
