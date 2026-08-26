@@ -1,9 +1,15 @@
+# Este arquivo é usado pelo builder do Railway (Railpack/BuildKit), que constrói
+# o workspace inteiro. NÃO exclua pacotes do workspace aqui: o build copia o
+# package.json de cada um para resolver o pnpm, e um pacote ignorado quebra o
+# build com "package.json: not found".
+#
+# Para excluir algo apenas da imagem Docker da API na Cloudflare, use
+# artifacts/api-server/Dockerfile.dockerignore, que tem precedência sobre este
+# arquivo naquele build.
 node_modules
 **/node_modules
 **/dist
 **/.tsbuildinfo
 .git
-artifacts/atlas-bi
-artifacts/mockup-sandbox
 attached_assets
 *.log
