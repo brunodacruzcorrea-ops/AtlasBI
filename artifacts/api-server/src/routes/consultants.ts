@@ -12,7 +12,7 @@ import {
   DeleteConsultantParams,
   ListConsultantsResponse,
 } from "@workspace/api-zod";
-import { ensureAuth } from "./auth";
+import { ensureAuth, ensureAdmin } from "./auth";
 
 const router: IRouter = Router();
 
@@ -40,7 +40,7 @@ router.get("/consultants", ensureAuth, async (_req, res): Promise<void> => {
   res.json(ListConsultantsResponse.parse(consultants.map(mapConsultant)));
 });
 
-router.post("/consultants", ensureAuth, async (req, res): Promise<void> => {
+router.post("/consultants", ensureAuth, ensureAdmin, async (req, res): Promise<void> => {
   const parsed = CreateConsultantBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -87,6 +87,7 @@ router.get("/consultants/:id", ensureAuth, async (req, res): Promise<void> => {
 router.patch(
   "/consultants/:id",
   ensureAuth,
+  ensureAdmin,
   async (req, res): Promise<void> => {
     const params = UpdateConsultantParams.safeParse(req.params);
     if (!params.success) {
@@ -128,6 +129,7 @@ router.patch(
 router.delete(
   "/consultants/:id",
   ensureAuth,
+  ensureAdmin,
   async (req, res): Promise<void> => {
     const params = DeleteConsultantParams.safeParse(req.params);
     if (!params.success) {

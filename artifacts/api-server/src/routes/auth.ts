@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import { LoginBody, LoginResponse, GetMeResponse } from "@workspace/api-zod";
 import { logger } from "../lib/logger";
 import crypto from "crypto";
+import { normalizeEmail } from "../lib/users";
 
 const router: IRouter = Router();
 
@@ -25,6 +26,15 @@ export function getUserIdFromToken(token: string): number | null {
   return tokenStore.get(token) ?? null;
 }
 
+// Usado na redefinicao de senha: sem isso as sessoes abertas com a senha
+// antiga continuariam validas, que e justamente o que uma redefinicao
+// precisa encerrar.
+export function revokeSessionsForUser(userId: number): void {
+  for (const [token, id] of tokenStore) {
+    if (id === userId) tokenStore.delete(token);
+  }
+}
+
 router.post("/auth/login", async (req, res): Promise<void> => {
   const parsed = LoginBody.safeParse(req.body);
   if (!parsed.success) {
@@ -35,10 +45,14 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   const { email, password } = parsed.data;
   const hashed = hashPassword(password);
 
+  // A comparacao e feita em minusculas dos dois lados. O cadastro nunca
+  // normalizou o e-mail, entao existem registros gravados com maiusculas; um
+  // teclado de celular que capitaliza a primeira letra, ou um espaco colado
+  // junto, fazia o login falhar mesmo com a senha certa.
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.email, email))
+    .where(sql`lower(${usersTable.email}) = ${normalizeEmail(email)}`)
     .limit(1);
 
   if (!user || user.passwordHash !== hashed) {
@@ -122,6 +136,25 @@ export function ensureAuth(req: any, res: any, next: any): void {
     return;
   }
   req.userId = userId;
+  next();
+}
+
+export async function ensureAdmin(
+  req: any,
+  res: any,
+  next: any,
+): Promise<void> {
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, req.userId))
+    .limit(1);
+
+  if (!user || user.role !== "admin") {
+    res.status(403).json({ error: "Acesso restrito a administradores" });
+    return;
+  }
+
   next();
 }
 

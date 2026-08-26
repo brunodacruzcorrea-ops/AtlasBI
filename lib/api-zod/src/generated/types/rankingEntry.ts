@@ -10,6 +10,8 @@ export interface RankingEntry {
   position: number;
   consultantId: number;
   consultantName: string;
+  /** @nullable */
+  photo?: string | null;
   totalAmount: number;
   totalQuantity: number;
   /** @nullable */

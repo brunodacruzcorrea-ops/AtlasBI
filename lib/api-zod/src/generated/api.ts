@@ -419,3 +419,5 @@ export const GetProductionChartResponseItem = zod.object({
   "goalAmount": zod.number().nullish()
 })
 export const GetProductionChartResponse = zod.array(GetProductionChartResponseItem)
+
+

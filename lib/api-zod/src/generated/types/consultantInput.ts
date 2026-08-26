@@ -10,7 +10,8 @@ export interface ConsultantInput {
   /** @minLength 1 */
   name: string;
   email: string;
-  photo?: string;
+  /** @nullable */
+  photo?: string | null;
   role?: string;
   team?: string;
   active?: boolean;

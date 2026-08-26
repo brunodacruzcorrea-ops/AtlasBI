@@ -65,6 +65,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+import { useAuth } from "@/components/auth-provider";
+
 const consultantSchema = z.object({
   name: z.string().min(1, "Nome obrigatório"),
   email: z.string().email("E-mail inválido"),
@@ -87,6 +89,10 @@ export default function Consultants() {
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  // A API ja recusa escrita de nao-admin (ensureAdmin em POST/PATCH/DELETE de
+  // /consultants). Esconder os controles evita oferecer uma acao que so
+  // resultaria em 403.
+  const { isAdmin } = useAuth();
 
   const { data: consultants, isLoading } = useListConsultants({
     query: { queryKey: getListConsultantsQueryKey() },
@@ -288,12 +294,14 @@ export default function Consultants() {
             else setIsCreateOpen(true);
           }}
         >
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 px-6 rounded-lg gap-2 shadow-sm">
-              <Plus className="w-5 h-5" />
-              Novo Consultor
-            </Button>
-          </DialogTrigger>
+          {isAdmin && (
+            <DialogTrigger asChild>
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 px-6 rounded-lg gap-2 shadow-sm">
+                <Plus className="w-5 h-5" />
+                Novo Consultor
+              </Button>
+            </DialogTrigger>
+          )}
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle className="text-xl font-black uppercase">
@@ -607,6 +615,7 @@ export default function Consultants() {
                         >
                           <BarChart3 className="w-4 h-4" />
                         </Button>
+                        {isAdmin && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -615,6 +624,8 @@ export default function Consultants() {
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
+                        )}
+                        {isAdmin && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
@@ -647,6 +658,7 @@ export default function Consultants() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        )}
                       </div>
                     </td>
                   </motion.tr>

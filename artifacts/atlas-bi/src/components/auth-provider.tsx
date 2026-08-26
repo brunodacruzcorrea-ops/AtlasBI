@@ -10,12 +10,16 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: any | null;
+  // Centralizado aqui para que as telas nao repitam a comparacao de string —
+  // era assim que a checagem de admin ficava espalhada e facil de esquecer.
+  isAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   user: null,
+  isAdmin: false,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -51,7 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, isLoading, user }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: !!user,
+        isLoading,
+        user,
+        isAdmin: user?.role === "admin",
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
