@@ -12,7 +12,25 @@ import Sales from './pages/sales';
 import Goals from './pages/goals';
 import UsersPage from './pages/users';
 import RootRedirect from './pages/index';
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Sem staleTime, cada montagem de tela e cada volta do foco refaziam a
+      // mesma consulta: nos logs, os tres endpoints do painel apareciam
+      // duplicados com segundos de diferenca. Trinta segundos nao atrasam a
+      // venda nova, que chega pelo SSE e invalida o cache na hora.
+      staleTime: 30_000,
+      // Repetir um 401 tres vezes so multiplica a falha: o token expirou ou o
+      // servidor reiniciou, e nenhuma das duas coisas melhora na segunda
+      // tentativa. Erro de rede ainda merece uma repeticao.
+      retry: (failureCount, error) => {
+        const status = (error as { status?: number } | null)?.status;
+        if (typeof status === "number" && status >= 400 && status < 500) return false;
+        return failureCount < 1;
+      },
+    },
+  },
+});
 function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
   return (
     <Shell>

@@ -44,6 +44,22 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // O build saia num arquivo unico de 1,1 MB: toda visita baixava e
+        // interpretava React, Recharts, Framer Motion e os icones juntos,
+        // antes de pintar qualquer coisa. Separar as bibliotecas grandes em
+        // pedacos proprios deixa o navegador cachear cada uma pelo hash, de
+        // modo que um deploy que so mexe em telas nao invalida o resto.
+        manualChunks: {
+          react: ['react', 'react-dom', 'wouter'],
+          charts: ['recharts'],
+          motion: ['framer-motion'],
+          icons: ['lucide-react'],
+          query: ['@tanstack/react-query'],
+        },
+      },
+    },
   },
   server: {
     port,

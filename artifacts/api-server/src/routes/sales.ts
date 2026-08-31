@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, gte, lt } from "drizzle-orm";
 import { db, salesTable, consultantsTable } from "@workspace/db";
+import { monthRange, yearRange } from "../lib/date-range";
 import {
   CreateSaleBody,
   CreateSaleResponse,
@@ -50,14 +51,17 @@ router.get("/sales", ensureAuth, async (req, res): Promise<void> => {
   if (consultantId != null) {
     conditions.push(eq(salesTable.consultantId, consultantId));
   }
-  if (month != null) {
+  // Filtro por faixa de datas sempre que a faixa e conhecida: EXTRACT sobre a
+  // coluna impede o uso do indice de sale_date. Ver lib/date-range.
+  if (year != null) {
+    const period = month != null ? monthRange(year, month) : yearRange(year);
+    conditions.push(gte(salesTable.saleDate, period.start));
+    conditions.push(lt(salesTable.saleDate, period.endExclusive));
+  } else if (month != null) {
+    // Mes sem ano pede o mesmo mes de todos os anos, que nao vira faixa
+    // continua. Caso raro na tela, entao segue com EXTRACT.
     conditions.push(
       sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date) = ${month}`,
-    );
-  }
-  if (year != null) {
-    conditions.push(
-      sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`,
     );
   }
 

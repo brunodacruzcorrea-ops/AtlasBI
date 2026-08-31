@@ -591,12 +591,12 @@ export default function Sales() {
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-bold tracking-wider">
                 <tr>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4">Consultant</th>
+                  <th className="px-6 py-4">Data</th>
+                  <th className="px-6 py-4">Consultor</th>
                   <th className="px-6 py-4">Product/Service</th>
                   <th className="px-6 py-4 text-right">Qty</th>
-                  <th className="px-6 py-4 text-right">Amount</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-4 text-right">Valor</th>
+                  <th className="px-6 py-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-card-border">
