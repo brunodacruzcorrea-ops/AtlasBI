@@ -15,6 +15,8 @@ import {
   Sparkles,
   Sun,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,9 +34,23 @@ const ADMIN_NAV_ITEMS = [
   { href: "/users", label: "Usuários", icon: UserCog },
 ];
 
+const SIDEBAR_STORAGE_KEY = "atlas_sidebar_collapsed";
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // O recolhimento vale só do breakpoint lg para cima: no celular a barra é um
+  // drawer que abre por cima do conteúdo, e recolher para uma tira de ícones
+  // ali só tiraria os rótulos sem devolver espaço nenhum.
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+    } catch {
+      // Navegador com armazenamento bloqueado: a barra abre expandida, que é
+      // o padrão, em vez de a tela inteira quebrar.
+      return false;
+    }
+  });
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("atlas_theme");
     return savedTheme
@@ -64,6 +80,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle("dark", darkMode);
     localStorage.setItem("atlas_theme", darkMode ? "dark" : "light");
   }, [darkMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(collapsed));
+    } catch {
+      // Sem persistência a barra volta expandida no próximo acesso, o que é
+      // aceitável; travar a navegação por causa disso não é.
+    }
+  }, [collapsed]);
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
@@ -98,24 +123,54 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 flex w-72 flex-col overflow-hidden border-r border-sidebar-border/80 bg-sidebar text-sidebar-foreground shadow-[24px_0_70px_-45px_rgba(2,12,32,0.9)] transition-transform duration-300 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-30 flex w-72 flex-col overflow-hidden border-r border-sidebar-border/80 bg-sidebar text-sidebar-foreground shadow-[24px_0_70px_-45px_rgba(2,12,32,0.9)] transition-[transform,width] duration-300 lg:translate-x-0",
+          // A largura recolhida é só do lg para cima; no drawer do celular a
+          // barra continua com a largura cheia.
+          collapsed && "lg:w-20",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="relative flex min-h-44 flex-col items-center justify-center overflow-hidden border-b border-white/5 px-6">
+        <div
+          className={cn(
+            "relative flex min-h-44 flex-col items-center justify-center overflow-hidden border-b border-white/5 px-6 transition-all duration-300",
+            collapsed && "lg:min-h-24 lg:px-2",
+          )}
+        >
           <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-sidebar-primary/15 blur-3xl" />
-          <img src="/niadcon-logo.png" alt="Niadcon" className="relative h-16 w-auto drop-shadow-xl" />
-          <span className="relative mt-3 text-xs font-black tracking-[0.28em] text-sidebar-foreground/75">
+          <img
+            src="/niadcon-logo.png"
+            alt="Niadcon"
+            className={cn(
+              "relative h-16 w-auto drop-shadow-xl transition-all duration-300",
+              collapsed && "lg:h-9",
+            )}
+          />
+          <span
+            className={cn(
+              "relative mt-3 text-xs font-black tracking-[0.28em] text-sidebar-foreground/75",
+              collapsed && "lg:hidden",
+            )}
+          >
             ATLAS BI
           </span>
-          <div className="relative mt-3 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-sidebar-foreground/55">
+          <div
+            className={cn(
+              "relative mt-3 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-sidebar-foreground/55",
+              collapsed && "lg:hidden",
+            )}
+          >
             <Sparkles className="h-3 w-3 text-sidebar-primary" />
             Business Intelligence
           </div>
         </div>
 
         <nav className="scrollbar-premium flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-6">
-          <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/35">
+          <p
+            className={cn(
+              "mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/35",
+              collapsed && "lg:hidden",
+            )}
+          >
             Navegação
           </p>
           {navItems.map((item) => {
@@ -128,8 +183,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 onClick={navigate}
+                // Recolhida, a barra mostra só o ícone: o title devolve o nome
+                // da página ao passar o mouse.
+                title={collapsed ? item.label : undefined}
                 className={cn(
                   "group relative flex items-center gap-3 overflow-hidden rounded-xl px-4 py-3.5 text-sm font-semibold transition-all duration-200",
+                  collapsed && "lg:justify-center lg:px-0",
                   isActive
                     ? "bg-gradient-to-r from-sidebar-accent to-sidebar-accent/70 text-white shadow-[0_12px_30px_-18px_rgba(0,0,0,0.8)]"
                     : "text-sidebar-foreground/60 hover:bg-white/5 hover:text-sidebar-foreground",
@@ -140,7 +199,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 )}
                 <span
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-lg transition",
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition",
                     isActive
                       ? "bg-sidebar-primary/15 text-sidebar-primary"
                       : "bg-white/[0.035] text-sidebar-foreground/45 group-hover:bg-white/[0.07] group-hover:text-sidebar-foreground",
@@ -148,7 +207,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 >
                   <item.icon className="h-[18px] w-[18px]" />
                 </span>
-                {item.label}
+                <span className={cn("truncate", collapsed && "lg:hidden")}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
@@ -157,23 +218,67 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="border-t border-white/5 p-4">
           <button
             type="button"
-            onClick={() => setDarkMode((enabled) => !enabled)}
-            className="mb-3 flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 text-sm font-semibold text-sidebar-foreground/70 transition-all hover:bg-white/[0.08] hover:text-sidebar-foreground"
-            aria-label={darkMode ? "Ativar modo claro" : "Ativar modo escuro"}
+            onClick={() => setCollapsed((value) => !value)}
+            // Só faz sentido onde a barra é fixa: no celular quem fecha o menu
+            // é o botão do cabeçalho.
+            className={cn(
+              "mb-3 hidden w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 text-sm font-semibold text-sidebar-foreground/70 transition-all hover:bg-white/[0.08] hover:text-sidebar-foreground lg:flex",
+              collapsed && "lg:justify-center lg:px-0",
+            )}
+            aria-label={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+            aria-expanded={!collapsed}
+            title={collapsed ? "Expandir menu" : "Recolher menu"}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary/10 text-sidebar-primary">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary/10 text-sidebar-primary">
+              {collapsed ? (
+                <PanelLeftOpen className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+            </span>
+            <span className={cn("flex-1 text-left", collapsed && "lg:hidden")}>
+              Recolher menu
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setDarkMode((enabled) => !enabled)}
+            className={cn(
+              "mb-3 flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 text-sm font-semibold text-sidebar-foreground/70 transition-all hover:bg-white/[0.08] hover:text-sidebar-foreground",
+              collapsed && "lg:justify-center lg:px-0",
+            )}
+            aria-label={darkMode ? "Ativar modo claro" : "Ativar modo escuro"}
+            title={collapsed ? (darkMode ? "Modo claro" : "Modo escuro") : undefined}
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary/10 text-sidebar-primary">
               {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </span>
-            <span className="flex-1 text-left">{darkMode ? "Modo claro" : "Modo escuro"}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-sidebar-foreground/35">
+            <span className={cn("flex-1 text-left", collapsed && "lg:hidden")}>
+              {darkMode ? "Modo claro" : "Modo escuro"}
+            </span>
+            <span
+              className={cn(
+                "text-[9px] font-black uppercase tracking-widest text-sidebar-foreground/35",
+                collapsed && "lg:hidden",
+              )}
+            >
               {darkMode ? "Escuro" : "Claro"}
             </span>
           </button>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sidebar-primary/25 bg-sidebar-primary/10 text-sm font-black text-sidebar-primary">
+          <div
+            className={cn(
+              "flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] p-3",
+              collapsed && "lg:flex-col lg:gap-2 lg:p-2",
+            )}
+          >
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sidebar-primary/25 bg-sidebar-primary/10 text-sm font-black text-sidebar-primary"
+              title={collapsed ? (user?.name ?? "Usuário") : undefined}
+            >
               {user?.name?.charAt(0).toUpperCase() || "A"}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
               <p className="truncate text-sm font-bold">{user?.name || "Usuário"}</p>
               <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
                 {user?.role || "Consultor"}
@@ -192,7 +297,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="min-h-screen pt-16 lg:pl-72 lg:pt-0">
+      <main
+        className={cn(
+          "min-h-screen pt-16 transition-[padding] duration-300 lg:pl-72 lg:pt-0",
+          collapsed && "lg:pl-20",
+        )}
+      >
         <div className="scrollbar-premium min-h-screen overflow-y-auto p-4 sm:p-6 lg:p-8 xl:p-10">
           <div className="mx-auto w-full max-w-[1520px]">{children}</div>
         </div>
@@ -200,4 +310,3 @@ export function Shell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
