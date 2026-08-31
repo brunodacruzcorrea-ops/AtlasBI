@@ -4,7 +4,7 @@ import { db, usersTable, consultantsTable } from "@workspace/db";
 import { LoginBody, LoginResponse, GetMeResponse } from "@workspace/api-zod";
 import { logger } from "../lib/logger";
 import crypto from "crypto";
-import { normalizeEmail } from "../lib/users";
+import { normalizeEmail, selectUserForLogin } from "../lib/users";
 import type { Viewer } from "../lib/visibility";
 
 const router: IRouter = Router();
@@ -22,6 +22,11 @@ function generateToken(userId: number): string {
 
 // Simple in-memory token store (production would use Redis/DB sessions)
 const tokenStore = new Map<string, number>(); // token -> userId
+
+// Teto defensivo na busca por e-mail no login: o esperado e 1 registro, 2
+// quando existe a duplicata legada de caixa. Um numero maior significa base
+// suja, e nao deve virar uma varredura grande dentro do login.
+const MAX_LOGIN_CANDIDATES = 10;
 
 export function getUserIdFromToken(token: string): number | null {
   return tokenStore.get(token) ?? null;
@@ -50,13 +55,40 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   // normalizou o e-mail, entao existem registros gravados com maiusculas; um
   // teclado de celular que capitaliza a primeira letra, ou um espaco colado
   // junto, fazia o login falhar mesmo com a senha certa.
-  const [user] = await db
+  //
+  // Sao lidos todos os registros que casam, e nao apenas o primeiro: o UNIQUE
+  // da coluna diferencia maiusculas, entao a mesma pessoa pode ter duas
+  // linhas e a antiga tem a senha velha. Ver selectUserForLogin.
+  const normalizedEmail = normalizeEmail(email);
+
+  const candidates = await db
     .select()
     .from(usersTable)
-    .where(sql`lower(${usersTable.email}) = ${normalizeEmail(email)}`)
-    .limit(1);
+    .where(sql`lower(${usersTable.email}) = ${normalizedEmail}`)
+    .orderBy(usersTable.id)
+    .limit(MAX_LOGIN_CANDIDATES);
 
-  if (!user || user.passwordHash !== hashed) {
+  const { user, candidateCount } = selectUserForLogin(candidates, hashed);
+
+  if (candidateCount > 1) {
+    req.log.warn(
+      { email: normalizedEmail, candidateCount, userIds: candidates.map((c) => c.id) },
+      "Duplicate users share this email ignoring case; merge them",
+    );
+  }
+
+  if (!user) {
+    // A resposta continua a mesma nos dois casos, de proposito — dizer qual
+    // dos dois falhou entregaria quais e-mails existem. O log, que so a
+    // equipe le, precisa distinguir: sem ele nao havia como saber, em
+    // producao, se um 401 era conta inexistente ou senha errada.
+    req.log.warn(
+      {
+        email: normalizedEmail,
+        reason: candidateCount === 0 ? "user_not_found" : "bad_password",
+      },
+      "Login failed",
+    );
     res.status(401).json({ error: "Email ou senha inválidos" });
     return;
   }

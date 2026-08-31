@@ -37,3 +37,42 @@ export const MIN_PASSWORD_LENGTH = 6;
 export function isValidPassword(value: unknown): value is string {
   return typeof value === "string" && value.length >= MIN_PASSWORD_LENGTH;
 }
+
+/**
+ * Registro minimo que o login precisa avaliar. Existe para manter esta
+ * escolha testavel sem banco: o shape real vem de usersTable.
+ */
+export type LoginCandidate = { id: number; email: string; passwordHash: string };
+
+export type LoginMatch<T extends LoginCandidate> = {
+  /** Registro cuja senha confere, ou null quando nenhum confere. */
+  user: T | null;
+  /** Quantos registros dividem o mesmo e-mail ignorando a caixa. */
+  candidateCount: number;
+};
+
+/**
+ * Escolhe, entre os registros que casam com o e-mail, aquele cuja senha
+ * confere.
+ *
+ * A coluna `email` tem UNIQUE, mas o UNIQUE do Postgres diferencia
+ * maiusculas: `Suelen.Azuma@` e `suelen.azuma@` convivem na mesma tabela,
+ * porque o cadastro so passou a normalizar depois que a base ja tinha
+ * registros antigos.
+ *
+ * O login busca por `lower(email)`, entao os dois casam. Pegar o primeiro e
+ * comparar so a senha dele — que era o que a rota fazia — reprova a pessoa
+ * quando o banco devolve a linha antiga, mesmo com a senha certa. E como a
+ * redefinicao de senha grava por id, ela pode gravar na outra linha, o que
+ * faz a redefinicao parecer nao ter efeito nenhum.
+ *
+ * Avaliar todos os candidatos resolve o login. A duplicata em si continua
+ * sendo sujeira de dados, e quem chama registra o aviso.
+ */
+export function selectUserForLogin<T extends LoginCandidate>(
+  candidates: readonly T[],
+  hashedPassword: string,
+): LoginMatch<T> {
+  const user = candidates.find((c) => c.passwordHash === hashedPassword) ?? null;
+  return { user, candidateCount: candidates.length };
+}
