@@ -23,7 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SalesRealtimeNotifications } from "../sales-realtime-notifications";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Painel", icon: LayoutDashboard },
   { href: "/ranking", label: "Ranking", icon: Trophy },
   { href: "/consultants", label: "Consultores", icon: Users },
   { href: "/sales", label: "Vendas", icon: BarChart3 },
@@ -160,7 +160,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             )}
           >
             <Sparkles className="h-3 w-3 text-sidebar-primary" />
-            Business Intelligence
+            Inteligência de Negócios
           </div>
         </div>
 
