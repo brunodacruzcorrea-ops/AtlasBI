@@ -8,7 +8,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "master-access": "tsx ./src/apply-master-access.ts",
     "test": "tsx --test src/*.test.ts",
-    "check-links": "tsx ./src/check-consultant-links.ts"
+    "check-links": "tsx ./src/check-consultant-links.ts",
+    "check-login": "tsx ./src/check-login.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
