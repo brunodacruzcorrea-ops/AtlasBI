@@ -11,6 +11,7 @@ Dashboard comercial da NIADCON — centro de comando de vendas com ranking, meta
 - `pnpm --filter @workspace/api-spec run codegen` — regenerar hooks e schemas Zod a partir do spec OpenAPI
 - `pnpm --filter @workspace/db run push` — aplicar mudanças no schema do banco (dev only)
 - Required env: `DATABASE_URL` — string de conexão PostgreSQL; `SESSION_SECRET` — segredo para tokens de auth
+- Optional env: `CRM_WEBHOOK_TOKEN` — liga o webhook de vendas do CRM (`POST /api/integrations/crm/sales`); `CRM_DEFAULT_SEGMENT` — segmento padrão dessas vendas. Ver `docs/integracao-crm.md`
 
 ## Credenciais padrão
 
