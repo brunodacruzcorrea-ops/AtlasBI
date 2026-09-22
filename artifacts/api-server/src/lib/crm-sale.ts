@@ -177,6 +177,21 @@ export function unwrapPayload(body: unknown): Obj {
   return obj;
 }
 
+/**
+ * Mostra no erro o que chegou no campo: numa automacao de CRM o erro tipico
+ * e a variavel nao ser substituida ("{{negocio.valor}}"), vir vazia ou vir
+ * num formato inesperado (objeto).
+ */
+function describeReceived(obj: Obj, keys: readonly string[]): string {
+  const key = keys.find((k) => k in obj);
+  return key ? ` Recebido em "${key}": ${JSON.stringify(obj[key])?.slice(0, 120)}` : "";
+}
+
+/** Texto simples; JSON de objeto em forma de texto nao conta como nome. */
+function plainText(value: unknown): string | null {
+  return isObj(parseMaybeJson(value)) ? null : asText(value);
+}
+
 function parseMaybeJson(value: unknown): unknown {
   if (typeof value !== "string" || !/^\s*[[{]/.test(value)) return value;
   try {
@@ -292,12 +307,16 @@ export function parseCrmSale(body: unknown): ParseResult {
     return { ok: false, ignored: true, reason: `Status "${status}" não é de venda fechada` };
   }
 
-  // Dono do negocio pode vir como objeto (Pipedrive: user_id: { name, email }).
-  const owner = FIELDS.owner.map((k) => obj[k]).find(isObj);
+  // Dono do negocio pode vir como objeto (Pipedrive: user_id: { name, email };
+  // DataCrazy: a variavel do atendente pode vir como objeto ou JSON em texto).
+  const ownerKeys = [...FIELDS.owner, ...FIELDS.consultantName, ...FIELDS.consultantEmail];
+  const owner = ownerKeys.map((k) => parseMaybeJson(obj[k])).find(isObj);
   const consultantEmail =
-    asText(pick(obj, FIELDS.consultantEmail)) ?? (owner ? asText(owner["email"]) : null);
+    plainText(pick(obj, FIELDS.consultantEmail)) ??
+    (owner ? asText(pick(owner, ["email", "mail"])) : null);
   const consultantName =
-    asText(pick(obj, FIELDS.consultantName)) ?? (owner ? asText(owner["name"]) : null);
+    plainText(pick(obj, FIELDS.consultantName)) ??
+    (owner ? asText(pick(owner, ["name", "nome", "fullName", "full_name"])) : null);
   const rawConsultantId = pick(obj, FIELDS.consultantId);
   const consultantId =
     rawConsultantId !== undefined && /^\d+$/.test(String(rawConsultantId).trim())
@@ -308,7 +327,10 @@ export function parseCrmSale(body: unknown): ParseResult {
     return {
       ok: false,
       ignored: false,
-      error: "Informe o consultor: consultantEmail, consultantName ou consultantId",
+      error: `Informe o consultor: consultantEmail, consultantName ou consultantId.${describeReceived(
+        obj,
+        [...FIELDS.consultantEmail, ...FIELDS.consultantName, ...FIELDS.owner],
+      )}`,
     };
   }
 
@@ -316,12 +338,10 @@ export function parseCrmSale(body: unknown): ParseResult {
   if (amount == null || amount < 0) {
     // Mostra o que chegou no campo: numa automacao de CRM o erro tipico e a
     // variavel nao ser substituida ("{{negocio.valor}}") ou vir vazia.
-    const key = FIELDS.amount.find((k) => k in obj);
-    const received = key ? ` Recebido em "${key}": ${JSON.stringify(obj[key])?.slice(0, 80)}` : "";
     return {
       ok: false,
       ignored: false,
-      error: `Informe o valor da venda (amount ou valor).${received}`,
+      error: `Informe o valor da venda (amount ou valor).${describeReceived(obj, FIELDS.amount)}`,
     };
   }
 

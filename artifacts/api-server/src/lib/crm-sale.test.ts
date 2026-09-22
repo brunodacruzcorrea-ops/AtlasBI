@@ -259,3 +259,19 @@ test("negócio sem produto entra com nome genérico", () => {
     assert.equal(result.sale.product, "Venda via CRM");
   }
 });
+
+test("atendente do DataCrazy como objeto ou JSON em texto", () => {
+  const atendente = { id: "u1", name: "Ana Souza", email: "ana@niadcon.com.br" };
+  for (const consultantName of [atendente, JSON.stringify(atendente)]) {
+    const result = parseCrmSale({ externalId: "1", consultantName, amount: 10, status: "won" });
+    assert.ok(result.ok);
+    assert.equal(result.sale.consultantEmail, "ana@niadcon.com.br");
+    assert.equal(result.sale.consultantName, "Ana Souza");
+  }
+});
+
+test("erro de consultor mostra o que chegou no campo", () => {
+  const result = parseCrmSale({ externalId: "1", consultantName: "", amount: 10 });
+  assert.ok(!result.ok && !result.ignored);
+  assert.ok(result.error.includes('Recebido em "consultantName": ""'), result.error);
+});
