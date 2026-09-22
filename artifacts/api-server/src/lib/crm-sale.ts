@@ -2,6 +2,7 @@
 //
 // Cada CRM (e cada automacao — Zapier, Make, n8n) manda a venda com um
 // formato diferente: Pipedrive embrulha o negocio em `current` ou `data`,
+// o DataCrazy manda o negocio com `attendant`, `total` e `products`,
 // outros mandam os campos soltos, alguns em portugues. Em vez de um
 // endpoint por CRM, aceitamos varios apelidos por campo e convertemos tudo
 // para uma venda do Atlas.
@@ -32,7 +33,7 @@ export type ParseResult =
 
 type Obj = Record<string, unknown>;
 
-const WRAPPERS = ["current", "data", "deal", "negocio", "payload", "body"];
+const WRAPPERS = ["current", "data", "deal", "business", "negocio", "payload", "body"];
 
 // Status que indicam venda fechada. So filtramos quando o CRM manda um
 // status: um negocio "aberto" ou "perdido" nao e venda e nao deve entrar.
@@ -89,8 +90,24 @@ const FIELDS = {
     "user_name",
     "responsavel",
   ],
-  owner: ["owner", "user", "owner_id", "user_id", "responsavel", "vendedor", "seller"],
-  product: ["product", "produto", "productName", "product_name", "title", "titulo", "name", "nome"],
+  owner: [
+    "owner",
+    "user",
+    "owner_id",
+    "user_id",
+    // DataCrazy: responsavel pelo negocio.
+    "attendant",
+    "atendente",
+    "responsible",
+    "responsavel",
+    "vendedor",
+    "seller",
+  ],
+  product: ["product", "produto", "productName", "product_name"],
+  // Lista de produtos do negocio (DataCrazy, RD, Ploomes): usa o nome do primeiro.
+  products: ["products", "produtos", "items", "itens"],
+  // Titulo do negocio: ultimo recurso para o nome do produto.
+  title: ["title", "titulo", "name", "nome"],
   segment: ["segment", "segmento", "category", "categoria"],
   amount: ["amount", "valor", "value", "price", "preco", "total", "dealValue", "deal_value"],
   quantity: ["quantity", "quantidade", "qty", "products_count"],
@@ -105,6 +122,11 @@ const FIELDS = {
     "close_date",
     "closedate",
     "closed_at",
+    "closedAt",
+    "wonAt",
+    "won_at",
+    "finishedAt",
+    "finished_at",
     "data",
     "date",
   ],
@@ -265,7 +287,14 @@ export function parseCrmSale(body: unknown): ParseResult {
     return { ok: false, ignored: false, error: "Informe o valor da venda (amount ou valor)" };
   }
 
-  const product = asText(pick(obj, FIELDS.product));
+  const productList = pick(obj, FIELDS.products);
+  const firstProduct = Array.isArray(productList) ? productList.find(isObj) : undefined;
+  const productObj = pick(obj, FIELDS.product);
+  const product =
+    asText(productObj) ??
+    (isObj(productObj) ? asText(pick(productObj, ["name", "nome", "title"])) : null) ??
+    (firstProduct ? asText(pick(firstProduct, ["name", "nome", "title", "product"])) : null) ??
+    asText(pick(obj, FIELDS.title));
   if (!product) {
     return { ok: false, ignored: false, error: "Informe o produto (product ou produto)" };
   }

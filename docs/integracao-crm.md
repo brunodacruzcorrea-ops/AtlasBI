@@ -33,17 +33,17 @@ Se o CRM permitir cabeçalhos, prefira mandar o token no cabeçalho
 ## 3. Campos aceitos
 
 Os nomes abaixo são aceitos em inglês ou português; o primeiro de cada linha
-é o recomendado. Se o CRM embrulhar o negócio em `current`, `data`, `deal` ou
-`payload` (caso do Pipedrive), o Atlas desembrulha sozinho.
+é o recomendado. Se o CRM embrulhar o negócio em `current`, `data`, `deal`,
+`business` ou `payload` (caso do Pipedrive), o Atlas desembrulha sozinho.
 
 | Campo | Obrigatório | Nomes aceitos | Observação |
 | --- | --- | --- | --- |
-| Consultor | sim | `consultantEmail`, `vendedorEmail`, `owner_email`, `user_email` · ou `consultantName`, `vendedor`, `owner_name` · ou `consultantId` | O **e-mail** é o mais seguro: precisa ser o mesmo cadastrado no consultor do Atlas. Por nome, ignora maiúsculas e acentos, mas o nome precisa ser único. |
-| Produto | sim | `product`, `produto`, `title`, `titulo`, `name` | |
+| Consultor | sim | `consultantEmail`, `vendedorEmail`, `owner_email`, `user_email` · ou `consultantName`, `vendedor`, `owner_name` · ou `consultantId` · ou objeto `attendant`/`owner`/`user` com `name` e `email` | O **e-mail** é o mais seguro: precisa ser o mesmo cadastrado no consultor do Atlas. Por nome, ignora maiúsculas e acentos, mas o nome precisa ser único. |
+| Produto | sim | `product`, `produto` · ou o primeiro item de `products`/`produtos` · ou `title`, `titulo`, `name` | |
 | Valor | sim | `amount`, `valor`, `value`, `price`, `total` | Aceita `1500.50`, `1.500,50`, `R$ 1.500,50`. |
 | ID do negócio | recomendado | `externalId`, `dealId`, `deal_id`, `id` | Com ele, reenvios e edições **atualizam** a venda em vez de duplicar. |
 | Segmento | não | `segment`, `segmento`, `category`, `categoria` | Padrão: `CRM_DEFAULT_SEGMENT`. |
-| Data da venda | não | `saleDate`, `dataVenda`, `won_time`, `closeDate`, `data` | `AAAA-MM-DD`, `DD/MM/AAAA` ou data/hora ISO. Padrão: hoje (Brasília). |
+| Data da venda | não | `saleDate`, `dataVenda`, `won_time`, `wonAt`, `closedAt`, `closeDate`, `data` | `AAAA-MM-DD`, `DD/MM/AAAA` ou data/hora ISO. Padrão: hoje (Brasília). |
 | Quantidade | não | `quantity`, `quantidade` | Padrão: 1. |
 | Observações | não | `notes`, `observacoes`, `description` | |
 | Status | não | `status`, `situacao` | Se vier, só entra venda com status de ganho (`won`, `ganho`, `vendido`, `fechado`, `closedwon`...). Outros status são ignorados. |
@@ -69,7 +69,7 @@ Exemplo mínimo:
 | `200` com `"created": false` | Negócio já recebido antes: venda atualizada (só os campos enviados). |
 | `200` com `"ignored": true` | Negócio não está ganho, ou a venda foi apagada no Atlas. Nada muda. |
 | `401` | Token errado ou ausente. |
-| `422` | Faltou campo obrigatório ou o consultor não foi encontrado. A mensagem diz o quê. |
+| `422` | Faltou campo obrigatório ou o consultor não foi encontrado. A mensagem diz o quê; quando o formato não é reconhecido, `receivedFields` lista os campos que chegaram. |
 | `503` | `CRM_WEBHOOK_TOKEN` não configurado no servidor. |
 
 ## 5. Testar
@@ -83,7 +83,28 @@ curl -X POST "https://<endereço-da-api>/api/integrations/crm/sales" \
 
 Depois apague a venda de teste na tela de Vendas.
 
-## Dicas por CRM
+## DataCrazy (CRM da NIADCON)
+
+1. No DataCrazy, crie uma **automação** com o gatilho de negócio **ganho**
+   (mudança de status do negócio para ganho).
+2. Adicione a ação de **webhook / requisição HTTP**:
+   - Método `POST`
+   - URL: `https://<endereço-da-api>/api/integrations/crm/sales?token=<CRM_WEBHOOK_TOKEN>`
+3. Se a ação enviar o negócio completo, não precisa configurar mais nada: o
+   Atlas lê do negócio o `id`, o `total`, o `status`, o responsável
+   (`attendant`: nome e e-mail), o primeiro item de `products` como produto
+   e a data de ganho. Negócios em andamento ou perdidos são ignorados.
+4. Se a ação permitir montar o corpo com variáveis, prefira o JSON explícito
+   do exemplo acima, com as variáveis do negócio: ID do negócio em
+   `externalId`, e-mail do responsável em `consultantEmail`, produto em
+   `product`, valor em `amount` e data de ganho em `saleDate`.
+5. O e-mail do responsável no DataCrazy precisa ser o mesmo do consultor no
+   Atlas (ou o nome, se for único).
+6. Ganhe um negócio de teste e confira na tela de Vendas. Se o DataCrazy
+   mostrar erro `422`, a resposta traz `receivedFields` com os nomes dos
+   campos que chegaram; é isso que precisa para ajustar o mapeamento.
+
+## Dicas para outros CRMs
 
 - **Pipedrive:** *Configurações → Ferramentas e integrações → Webhooks →
   Criar*. Evento: `updated.deal` (ou `change` em `deal`). O Atlas usa

@@ -166,3 +166,48 @@ test("tokenMatches compara o segredo", () => {
   assert.equal(tokenMatches("abd", "abc"), false);
   assert.equal(tokenMatches(undefined, "abc"), false);
 });
+
+test("aceita o negócio do DataCrazy (attendant, total, products)", () => {
+  const result = parseCrmSale({
+    business: {
+      id: "b7c1e2",
+      status: "won",
+      total: 4890.9,
+      attendant: { id: "a1", name: "Ana Souza", email: "ana@niadcon.com.br" },
+      lead: { name: "Cliente Fulano", email: "cliente@x.com" },
+      products: [{ name: "Consórcio Auto", quantity: 1, price: 4890.9 }],
+      stage: { name: "Fechado" },
+      wonAt: "2026-09-22T17:10:00.000Z",
+    },
+  });
+  assert.ok(result.ok);
+  assert.equal(result.sale.externalId, "b7c1e2");
+  assert.equal(result.sale.consultantEmail, "ana@niadcon.com.br");
+  assert.equal(result.sale.product, "Consórcio Auto");
+  assert.equal(result.sale.amount, 4890.9);
+  assert.equal(result.sale.saleDate, "2026-09-22");
+});
+
+test("negócio em andamento ou perdido do DataCrazy é ignorado", () => {
+  for (const status of ["in_process", "lost"]) {
+    const result = parseCrmSale({
+      id: "x",
+      status,
+      total: 1,
+      attendant: { name: "Ana Souza" },
+      products: [{ name: "P" }],
+    });
+    assert.equal(!result.ok && result.ignored, true);
+  }
+});
+
+test("sem produto explícito usa o primeiro da lista antes do título", () => {
+  const result = parseCrmSale({
+    title: "Negócio da Maria",
+    products: [{ name: "Seguro Vida" }],
+    value: 10,
+    owner_email: "a@b.com",
+  });
+  assert.ok(result.ok);
+  assert.equal(result.sale.product, "Seguro Vida");
+});

@@ -1,7 +1,13 @@
 import { Router, type IRouter } from "express";
 import { eq, sql } from "drizzle-orm";
 import { db, salesTable, consultantsTable, crmSaleLinksTable } from "@workspace/db";
-import { matchConsultant, parseCrmSale, todayInBrazil, tokenMatches } from "../lib/crm-sale";
+import {
+  matchConsultant,
+  parseCrmSale,
+  todayInBrazil,
+  tokenMatches,
+  unwrapPayload,
+} from "../lib/crm-sale";
 import { broadcastSaleCreated } from "./sales-events";
 
 // Webhook que recebe do CRM as vendas fechadas. Nao usa o login do Atlas
@@ -61,8 +67,12 @@ router.post("/integrations/crm/sales", async (req, res): Promise<void> => {
       // 200 e nao 4xx: o CRM trataria erro como falha e reenviaria o evento.
       res.status(200).json({ ignored: true, reason: parsed.reason });
     } else {
-      req.log.warn({ error: parsed.error }, "CRM webhook payload rejected");
-      res.status(422).json({ error: parsed.error });
+      // Devolve os nomes (so os nomes, nao os valores) dos campos recebidos:
+      // e o que basta para ajustar o mapeamento quando um CRM manda outro
+      // formato, sem precisar de acesso ao servidor.
+      const receivedFields = Object.keys(unwrapPayload(req.body));
+      req.log.warn({ error: parsed.error, receivedFields }, "CRM webhook payload rejected");
+      res.status(422).json({ error: parsed.error, receivedFields });
     }
     return;
   }
