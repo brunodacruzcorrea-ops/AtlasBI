@@ -303,7 +303,15 @@ export function parseCrmSale(body: unknown): ParseResult {
 
   const amount = parseAmount(pick(obj, FIELDS.amount));
   if (amount == null || amount < 0) {
-    return { ok: false, ignored: false, error: "Informe o valor da venda (amount ou valor)" };
+    // Mostra o que chegou no campo: numa automacao de CRM o erro tipico e a
+    // variavel nao ser substituida ("{{negocio.valor}}") ou vir vazia.
+    const key = FIELDS.amount.find((k) => k in obj);
+    const received = key ? ` Recebido em "${key}": ${JSON.stringify(obj[key])?.slice(0, 80)}` : "";
+    return {
+      ok: false,
+      ignored: false,
+      error: `Informe o valor da venda (amount ou valor).${received}`,
+    };
   }
 
   const productList = pick(obj, FIELDS.products);
