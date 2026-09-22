@@ -1,4 +1,4 @@
-import express, { Router, type IRouter } from "express";
+import express, { Router, type IRouter, type Request, type Response } from "express";
 import { eq, sql } from "drizzle-orm";
 import { db, salesTable, consultantsTable, crmSaleLinksTable } from "@workspace/db";
 import {
@@ -50,12 +50,17 @@ function receivedToken(req: any): string | undefined {
 
 class DuplicateLink extends Error {}
 
+function queryWithoutToken(query: Request["query"]): Record<string, unknown> {
+  const { token: _token, ...rest } = query as Record<string, unknown>;
+  return rest;
+}
+
 // O app so interpreta JSON e formulario. Alguns CRMs mandam JSON com outro
 // Content-Type (ou nenhum): le o corpo como texto e o parser tenta JSON.
 // Corpos ja interpretados pelos parsers globais passam direto.
 const rawBody = express.text({ type: () => true, limit: "3mb" });
 
-router.post("/integrations/crm/sales", rawBody, async (req, res): Promise<void> => {
+async function handleCrmSale(req: Request, res: Response): Promise<void> {
   const expected = process.env["CRM_WEBHOOK_TOKEN"];
   if (!expected) {
     res.status(503).json({ error: "Integração com CRM não configurada (CRM_WEBHOOK_TOKEN)" });
@@ -66,7 +71,8 @@ router.post("/integrations/crm/sales", rawBody, async (req, res): Promise<void> 
     return;
   }
 
-  const parsed = parseCrmSale(req.body);
+  const payload = req.method === "GET" ? queryWithoutToken(req.query) : req.body;
+  const parsed = parseCrmSale(payload);
   if (!parsed.ok) {
     if (parsed.ignored) {
       // 200 e nao 4xx: o CRM trataria erro como falha e reenviaria o evento.
@@ -75,15 +81,16 @@ router.post("/integrations/crm/sales", rawBody, async (req, res): Promise<void> 
       // Devolve os nomes (so os nomes, nao os valores) dos campos recebidos:
       // e o que basta para ajustar o mapeamento quando um CRM manda outro
       // formato, sem precisar de acesso ao servidor.
-      const receivedFields = Object.keys(unwrapPayload(req.body));
+      const receivedFields = Object.keys(unwrapPayload(payload));
       // Formato do corpo (nao o conteudo) para diagnosticar quando nada e
       // reconhecido: corpo vazio, tipo inesperado, lista...
       const received = {
+        method: req.method,
         contentType: req.headers["content-type"] ?? null,
         contentLength: req.headers["content-length"] ?? null,
-        bodyType: Array.isArray(req.body) ? "array" : typeof req.body,
+        bodyType: Array.isArray(payload) ? "array" : typeof payload,
         topLevelFields:
-          req.body && typeof req.body === "object" ? Object.keys(req.body).slice(0, 30) : [],
+          payload && typeof payload === "object" ? Object.keys(payload).slice(0, 30) : [],
       };
       req.log.warn(
         { error: parsed.error, receivedFields, received },
@@ -207,6 +214,11 @@ router.post("/integrations/crm/sales", rawBody, async (req, res): Promise<void> 
   });
   req.log.info({ saleId: sale.id, externalId }, "Sale created from CRM webhook");
   respond(201, sale, true);
-});
+}
+
+router.post("/integrations/crm/sales", rawBody, handleCrmSale);
+// Algumas automacoes do DataCrazy chamaram a URL com GET; nesse caso os
+// dados vem na query string.
+router.get("/integrations/crm/sales", handleCrmSale);
 
 export default router;
