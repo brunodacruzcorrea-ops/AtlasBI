@@ -39,7 +39,7 @@ Os nomes abaixo são aceitos em inglês ou português; o primeiro de cada linha
 | Campo | Obrigatório | Nomes aceitos | Observação |
 | --- | --- | --- | --- |
 | Consultor | sim | `consultantEmail`, `vendedorEmail`, `owner_email`, `user_email` · ou `consultantName`, `vendedor`, `owner_name` · ou `consultantId` · ou objeto `attendant`/`owner`/`user` com `name` e `email` | O **e-mail** é o mais seguro: precisa ser o mesmo cadastrado no consultor do Atlas. Por nome, ignora maiúsculas e acentos, mas o nome precisa ser único. |
-| Produto | sim | `product`, `produto` · ou o primeiro item de `products`/`produtos` · ou `title`, `titulo`, `name` | |
+| Produto | não | `product`, `produto` · ou o primeiro item de `products`/`produtos` (lista ou texto JSON) · ou `title`, `titulo`, `name` | Padrão: "Venda via CRM". |
 | Valor | sim | `amount`, `valor`, `value`, `price`, `total` | Aceita `1500.50`, `1.500,50`, `R$ 1.500,50`. |
 | ID do negócio | recomendado | `externalId`, `dealId`, `deal_id`, `id` | Com ele, reenvios e edições **atualizam** a venda em vez de duplicar. |
 | Segmento | não | `segment`, `segmento`, `category`, `categoria` | Padrão: `CRM_DEFAULT_SEGMENT`. |

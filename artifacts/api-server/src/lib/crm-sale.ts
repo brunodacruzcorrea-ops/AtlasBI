@@ -33,6 +33,8 @@ export type ParseResult =
 
 type Obj = Record<string, unknown>;
 
+const DEFAULT_PRODUCT = "Venda via CRM";
+
 const WRAPPERS = ["current", "data", "deal", "business", "negocio", "payload", "body"];
 
 // Status que indicam venda fechada. So filtramos quando o CRM manda um
@@ -175,6 +177,15 @@ export function unwrapPayload(body: unknown): Obj {
   return obj;
 }
 
+function parseMaybeJson(value: unknown): unknown {
+  if (typeof value !== "string" || !/^\s*[[{]/.test(value)) return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
 function pick(obj: Obj, keys: readonly string[]): unknown {
   for (const key of keys) {
     const value = obj[key];
@@ -314,17 +325,25 @@ export function parseCrmSale(body: unknown): ParseResult {
     };
   }
 
-  const productList = pick(obj, FIELDS.products);
-  const firstProduct = Array.isArray(productList) ? productList.find(isObj) : undefined;
+  // DataCrazy: a variavel "JSON de produtos do negocio" pode chegar como
+  // lista ou, se foi colocada entre aspas no corpo, como texto com o JSON.
+  const productList = parseMaybeJson(pick(obj, FIELDS.products));
+  const firstProduct = Array.isArray(productList)
+    ? productList.find(isObj)
+    : isObj(productList)
+      ? productList
+      : undefined;
   const productObj = pick(obj, FIELDS.product);
   const product =
     asText(productObj) ??
     (isObj(productObj) ? asText(pick(productObj, ["name", "nome", "title"])) : null) ??
-    (firstProduct ? asText(pick(firstProduct, ["name", "nome", "title", "product"])) : null) ??
-    asText(pick(obj, FIELDS.title));
-  if (!product) {
-    return { ok: false, ignored: false, error: "Informe o produto (product ou produto)" };
-  }
+    (firstProduct
+      ? asText(pick(firstProduct, ["name", "nome", "title", "productName", "product"]))
+      : null) ??
+    asText(pick(obj, FIELDS.title)) ??
+    // Negocio ganho sem produto cadastrado ainda e venda: melhor entrar no
+    // ranking com um nome generico do que ser recusado.
+    DEFAULT_PRODUCT;
 
   const rawQuantity = Number(pick(obj, FIELDS.quantity));
   const quantity = Number.isInteger(rawQuantity) && rawQuantity > 0 ? rawQuantity : 1;

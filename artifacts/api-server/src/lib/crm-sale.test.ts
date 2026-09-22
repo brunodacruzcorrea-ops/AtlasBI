@@ -90,11 +90,10 @@ test("status ganho é reconhecido sem acento e sem caixa", () => {
   assert.ok(result.ok);
 });
 
-test("rejeita venda sem consultor, sem valor ou sem produto", () => {
+test("rejeita venda sem consultor ou sem valor", () => {
   for (const body of [
     { product: "X", amount: 1 },
     { product: "X", consultantEmail: "a@b.com" },
-    { amount: 1, consultantEmail: "a@b.com" },
   ]) {
     const result = parseCrmSale(body);
     assert.equal(result.ok, false);
@@ -235,5 +234,28 @@ test("erro de valor mostra o que chegou no campo", () => {
     const result = parseCrmSale({ consultantEmail: "a@b.com", product: "P", amount });
     assert.ok(!result.ok && !result.ignored);
     assert.ok(result.error.includes(`Recebido em "amount": ${shown}`), result.error);
+  }
+});
+
+test("JSON de produtos do DataCrazy como texto ou lista", () => {
+  const produtos = [{ name: "Consórcio Auto", quantity: 1 }];
+  for (const products of [produtos, JSON.stringify(produtos)]) {
+    const result = parseCrmSale({
+      externalId: "123",
+      consultantName: "Ana Souza",
+      amount: "1500",
+      status: "won",
+      products,
+    });
+    assert.ok(result.ok);
+    assert.equal(result.sale.product, "Consórcio Auto");
+  }
+});
+
+test("negócio sem produto entra com nome genérico", () => {
+  for (const products of [undefined, [], "[]"]) {
+    const result = parseCrmSale({ consultantEmail: "a@b.com", amount: 1, products });
+    assert.ok(result.ok);
+    assert.equal(result.sale.product, "Venda via CRM");
   }
 });
