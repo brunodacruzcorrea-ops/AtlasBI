@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import express, { Router, type IRouter } from "express";
 import { eq, sql } from "drizzle-orm";
 import { db, salesTable, consultantsTable, crmSaleLinksTable } from "@workspace/db";
 import {
@@ -50,7 +50,12 @@ function receivedToken(req: any): string | undefined {
 
 class DuplicateLink extends Error {}
 
-router.post("/integrations/crm/sales", async (req, res): Promise<void> => {
+// O app so interpreta JSON e formulario. Alguns CRMs mandam JSON com outro
+// Content-Type (ou nenhum): le o corpo como texto e o parser tenta JSON.
+// Corpos ja interpretados pelos parsers globais passam direto.
+const rawBody = express.text({ type: () => true, limit: "3mb" });
+
+router.post("/integrations/crm/sales", rawBody, async (req, res): Promise<void> => {
   const expected = process.env["CRM_WEBHOOK_TOKEN"];
   if (!expected) {
     res.status(503).json({ error: "Integração com CRM não configurada (CRM_WEBHOOK_TOKEN)" });
@@ -71,8 +76,20 @@ router.post("/integrations/crm/sales", async (req, res): Promise<void> => {
       // e o que basta para ajustar o mapeamento quando um CRM manda outro
       // formato, sem precisar de acesso ao servidor.
       const receivedFields = Object.keys(unwrapPayload(req.body));
-      req.log.warn({ error: parsed.error, receivedFields }, "CRM webhook payload rejected");
-      res.status(422).json({ error: parsed.error, receivedFields });
+      // Formato do corpo (nao o conteudo) para diagnosticar quando nada e
+      // reconhecido: corpo vazio, tipo inesperado, lista...
+      const received = {
+        contentType: req.headers["content-type"] ?? null,
+        contentLength: req.headers["content-length"] ?? null,
+        bodyType: Array.isArray(req.body) ? "array" : typeof req.body,
+        topLevelFields:
+          req.body && typeof req.body === "object" ? Object.keys(req.body).slice(0, 30) : [],
+      };
+      req.log.warn(
+        { error: parsed.error, receivedFields, received },
+        "CRM webhook payload rejected",
+      );
+      res.status(422).json({ error: parsed.error, receivedFields, received });
     }
     return;
   }

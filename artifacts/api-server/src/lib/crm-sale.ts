@@ -140,9 +140,28 @@ function isObj(value: unknown): value is Obj {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Aceita o corpo como chegou: JSON mandado como texto (sem o Content-Type
+ * de JSON) e lista de eventos (usa o primeiro).
+ */
+function normalizeBody(body: unknown): unknown {
+  if (typeof body === "string") {
+    const text = body.trim();
+    if (!text) return {};
+    try {
+      return normalizeBody(JSON.parse(text));
+    } catch {
+      return Object.fromEntries(new URLSearchParams(text));
+    }
+  }
+  if (Array.isArray(body)) return body.find(isObj) ?? {};
+  return body;
+}
+
 /** Desembrulha `{ current: {...} }`, `{ data: {...} }` etc. */
 export function unwrapPayload(body: unknown): Obj {
-  let obj: Obj = isObj(body) ? body : {};
+  const normalized = normalizeBody(body);
+  let obj: Obj = isObj(normalized) ? normalized : {};
   for (let depth = 0; depth < 3; depth++) {
     const inner = WRAPPERS.map((k) => obj[k]).find(isObj);
     if (!inner) break;
