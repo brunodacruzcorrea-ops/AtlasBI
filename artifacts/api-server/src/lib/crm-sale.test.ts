@@ -225,3 +225,15 @@ test("aceita JSON enviado como texto e lista de eventos", () => {
   const empty = parseCrmSale("");
   assert.equal(empty.ok, false);
 });
+
+test("erro de valor mostra o que chegou no campo", () => {
+  for (const [amount, shown] of [
+    ["{{negocio.valor}}", '"{{negocio.valor}}"'],
+    ["", '""'],
+    [null, "null"],
+  ] as const) {
+    const result = parseCrmSale({ consultantEmail: "a@b.com", product: "P", amount });
+    assert.ok(!result.ok && !result.ignored);
+    assert.ok(result.error.includes(`Recebido em "amount": ${shown}`), result.error);
+  }
+});
