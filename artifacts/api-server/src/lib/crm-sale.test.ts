@@ -211,3 +211,17 @@ test("sem produto explícito usa o primeiro da lista antes do título", () => {
   assert.ok(result.ok);
   assert.equal(result.sale.product, "Seguro Vida");
 });
+
+test("aceita JSON enviado como texto e lista de eventos", () => {
+  const body = { id: 1, status: "won", total: 10, attendant: { email: "a@b.com" }, products: [{ name: "P" }] };
+  const asText = parseCrmSale(JSON.stringify(body));
+  assert.ok(asText.ok);
+  assert.equal(asText.sale.product, "P");
+
+  const asList = parseCrmSale([body]);
+  assert.ok(asList.ok);
+  assert.equal(asList.sale.externalId, "1");
+
+  const empty = parseCrmSale("");
+  assert.equal(empty.ok, false);
+});
