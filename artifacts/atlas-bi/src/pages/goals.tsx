@@ -92,7 +92,7 @@ export default function Goals() {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListGoalsQueryKey({ month, year }) });
             queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
-            toast({ title: "Goal updated successfully" });
+            toast({ title: "Meta atualizada com sucesso" });
             handleCloseDialog();
           },
         }
@@ -113,7 +113,7 @@ export default function Goals() {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListGoalsQueryKey({ month, year }) });
             queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
-            toast({ title: "Goal set successfully" });
+            toast({ title: "Meta definida com sucesso" });
             handleCloseDialog();
           },
         }
@@ -142,7 +142,7 @@ export default function Goals() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListGoalsQueryKey({ month, year }) });
           queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
-          toast({ title: "Goal deleted successfully", variant: "destructive" });
+          toast({ title: "Meta excluída com sucesso", variant: "destructive" });
         },
       }
     );
@@ -241,7 +241,7 @@ export default function Goals() {
                           <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : undefined}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/50 focus:ring-primary">
-                                <SelectValue placeholder="Select consultant" />
+                                <SelectValue placeholder="Selecione o consultor" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -262,7 +262,7 @@ export default function Goals() {
                       name="month"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Month</FormLabel>
+                          <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Mês</FormLabel>
                           <Select onValueChange={(v) => field.onChange(Number(v))} value={String(field.value)}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/50 focus:ring-primary">
@@ -284,7 +284,7 @@ export default function Goals() {
                       name="year"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Year</FormLabel>
+                          <FormLabel className="text-xs font-bold uppercase text-muted-foreground">Ano</FormLabel>
                           <FormControl>
                             <Input type="number" {...field} className="bg-muted/50 focus-visible:ring-primary font-mono" />
                           </FormControl>

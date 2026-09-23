@@ -11,6 +11,8 @@ import {
 } from "@workspace/api-zod";
 import { ensureAuth, resolveViewer } from "./auth";
 import { maskRankingGoals } from "../lib/visibility";
+import { monthRange, yearRange } from "../lib/date-range";
+import { gte, lt } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -33,6 +35,11 @@ router.get("/dashboard/summary", ensureAuth, async (req, res): Promise<void> => 
   const prevMonth = month === 1 ? 12 : month - 1;
   const prevYear = month === 1 ? year - 1 : year;
 
+  // Faixa de datas em vez de EXTRACT: mesmas linhas, mas usa o indice de
+  // sale_date. Ver lib/date-range.
+  const current = monthRange(year, month);
+  const previous = monthRange(prevYear, prevMonth);
+
   // Current month sales
   const currentSalesRows = await db
     .select({
@@ -42,8 +49,8 @@ router.get("/dashboard/summary", ensureAuth, async (req, res): Promise<void> => 
     .from(salesTable)
     .where(
       and(
-        sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date) = ${month}`,
-        sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`
+        gte(salesTable.saleDate, current.start),
+        lt(salesTable.saleDate, current.endExclusive)
       )
     );
 
@@ -56,8 +63,8 @@ router.get("/dashboard/summary", ensureAuth, async (req, res): Promise<void> => 
     .from(salesTable)
     .where(
       and(
-        sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date) = ${prevMonth}`,
-        sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${prevYear}`
+        gte(salesTable.saleDate, previous.start),
+        lt(salesTable.saleDate, previous.endExclusive)
       )
     );
   const prevSales = parseFloat(prevSalesRows[0]?.totalAmount ?? "0");
@@ -102,8 +109,8 @@ router.get("/dashboard/summary", ensureAuth, async (req, res): Promise<void> => 
     .leftJoin(consultantsTable, eq(salesTable.consultantId, consultantsTable.id))
     .where(
       and(
-        sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date) = ${month}`,
-        sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`
+        gte(salesTable.saleDate, current.start),
+        lt(salesTable.saleDate, current.endExclusive)
       )
     )
     .groupBy(salesTable.consultantId, consultantsTable.name, consultantsTable.photo)
@@ -138,6 +145,9 @@ router.get("/dashboard/ranking", ensureAuth, async (req, res): Promise<void> => 
   const now = new Date();
   const month = qp.data.month ?? now.getMonth() + 1;
   const year = qp.data.year ?? now.getFullYear();
+
+  // Mesma faixa de datas do resumo: usa o indice de sale_date.
+  const period = monthRange(year, month);
   const limit = qp.data.limit ?? 10;
 
   const rankingRows = await db
@@ -152,8 +162,8 @@ router.get("/dashboard/ranking", ensureAuth, async (req, res): Promise<void> => 
     .leftJoin(consultantsTable, eq(salesTable.consultantId, consultantsTable.id))
     .where(
       and(
-        sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date) = ${month}`,
-        sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`
+        gte(salesTable.saleDate, period.start),
+        lt(salesTable.saleDate, period.endExclusive)
       )
     )
     .groupBy(salesTable.consultantId, consultantsTable.name, consultantsTable.photo)
@@ -211,6 +221,9 @@ router.get("/dashboard/production-chart", ensureAuth, async (req, res): Promise<
 
   const year = qp.data.year ?? new Date().getFullYear();
 
+  // O ano inteiro como faixa, pelo mesmo motivo.
+  const period = yearRange(year);
+
   const salesRows = await db
     .select({
       month: sql<string>`EXTRACT(MONTH FROM ${salesTable.saleDate}::date)`,
@@ -218,7 +231,12 @@ router.get("/dashboard/production-chart", ensureAuth, async (req, res): Promise<
       totalQuantity: sql<string>`COALESCE(SUM(${salesTable.quantity}), 0)`,
     })
     .from(salesTable)
-    .where(sql`EXTRACT(YEAR FROM ${salesTable.saleDate}::date) = ${year}`)
+    .where(
+      and(
+        gte(salesTable.saleDate, period.start),
+        lt(salesTable.saleDate, period.endExclusive),
+      ),
+    )
     .groupBy(sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date)`)
     .orderBy(sql`EXTRACT(MONTH FROM ${salesTable.saleDate}::date)`);
 

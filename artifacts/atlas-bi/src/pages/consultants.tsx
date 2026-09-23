@@ -541,7 +541,7 @@ export default function Consultants() {
                   <th className="px-6 py-4">Consultor</th>
                   <th className="px-6 py-4">Equipe</th>
                   <th className="px-6 py-4">Cargo</th>
-                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Situação</th>
                   <th className="px-6 py-4 text-right">Ações</th>
                 </tr>
               </thead>
@@ -648,7 +648,7 @@ export default function Consultants() {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(consultant.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

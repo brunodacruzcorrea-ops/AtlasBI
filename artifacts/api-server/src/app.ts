@@ -61,6 +61,11 @@ app.use(
       }
       callback(new Error("Not allowed by CORS"));
     },
+    // Sem isto o navegador refaz o preflight a cada chamada: nos logs de
+    // producao, metade das requisicoes eram OPTIONS. 24h e o teto que os
+    // navegadores aceitam; a lista de origens acima muda por deploy, e o
+    // deploy troca o processo de qualquer forma.
+    maxAge: 86_400,
   }),
 );
 app.use(express.json({ limit: "3mb" }));

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, numeric, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -11,7 +11,12 @@ export const goalsTable = pgTable("goals", {
   targetQuantity: integer("target_quantity"),
   description: text("description"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => ({
+  // O painel e a tela de metas sempre buscam pelo par ano/mes, e depois
+  // separam a meta de equipe (consultor nulo) das individuais.
+  periodIdx: index("goals_year_month_idx").on(table.year, table.month),
+  consultantIdx: index("goals_consultant_id_idx").on(table.consultantId),
+}));
 
 export const insertGoalSchema = createInsertSchema(goalsTable).omit({ id: true, createdAt: true });
 export type InsertGoal = z.infer<typeof insertGoalSchema>;

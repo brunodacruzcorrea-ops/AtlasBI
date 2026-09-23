@@ -25,6 +25,12 @@ export function SalesRealtimeNotifications() {
 
     const controller = new AbortController();
     let reconnectTimer: number | undefined;
+    // A reconexao era fixa em 4s. Com a API fora do ar, todo painel aberto
+    // repetia a chamada a cada 4 segundos indefinidamente, justo quando o
+    // servico esta caido. O intervalo agora dobra a cada falha, ate 1 minuto,
+    // e volta ao inicio assim que a conexao e aceita.
+    let reconnectDelay = 4000;
+    const MAX_RECONNECT_DELAY = 60_000;
 
     const connect = async () => {
       try {
@@ -37,6 +43,8 @@ export function SalesRealtimeNotifications() {
         if (!response.ok || !response.body) {
           throw new Error(`Canal indisponível: ${response.status}`);
         }
+
+        reconnectDelay = 4000;
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -68,7 +76,8 @@ export function SalesRealtimeNotifications() {
         }
       } catch (error) {
         if (!controller.signal.aborted) {
-          reconnectTimer = window.setTimeout(connect, 4000);
+          reconnectTimer = window.setTimeout(connect, reconnectDelay);
+          reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
         }
       }
     };
