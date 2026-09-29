@@ -10,6 +10,7 @@ import {
   deleteSession,
   deleteSessionsForUser,
   getSessionUserId,
+  type SessionExecutor,
 } from "../lib/session-store";
 import type { Viewer } from "../lib/visibility";
 
@@ -32,8 +33,14 @@ export function getUserIdFromToken(token: string): Promise<number | null> {
 // abertas continuariam validas, que e justamente o que essas operacoes
 // precisam encerrar. Agora as sessoes vivem no banco e sobrevivem a deploys,
 // entao esquecer de chamar isto deixaria um acesso aberto por ate 30 dias.
-export function revokeSessionsForUser(userId: number): Promise<void> {
-  return deleteSessionsForUser(userId);
+//
+// Chame dentro da mesma transacao que muda a conta (passe `executor`), para a
+// revogacao nao poder falhar depois de a senha ja ter mudado.
+export function revokeSessionsForUser(
+  userId: number,
+  executor?: SessionExecutor,
+): Promise<void> {
+  return deleteSessionsForUser(userId, executor);
 }
 
 router.post("/auth/login", async (req, res): Promise<void> => {

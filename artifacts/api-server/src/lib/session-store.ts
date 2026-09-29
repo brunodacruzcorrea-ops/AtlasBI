@@ -77,8 +77,19 @@ export async function deleteSession(token: string): Promise<void> {
   await db.delete(sessionsTable).where(eq(sessionsTable.tokenHash, hashSessionToken(token)));
 }
 
-/** Encerra todas as sessoes do usuario (troca de senha, exclusao). */
-export async function deleteSessionsForUser(userId: number): Promise<void> {
+/** O que da para usar como executor: o proprio db ou uma transacao dele. */
+export type SessionExecutor = Pick<typeof db, "delete">;
+
+/**
+ * Encerra todas as sessoes do usuario (troca de senha, exclusao). Passe a
+ * transacao em `executor` para que a revogacao e a mudanca da conta confirmem
+ * juntas: se uma falhar, nenhuma vale, e nunca sobra token valido de uma conta
+ * cuja senha ja mudou.
+ */
+export async function deleteSessionsForUser(
+  userId: number,
+  executor: SessionExecutor = db,
+): Promise<void> {
   await ensureSessionsTable();
-  await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
+  await executor.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 }
