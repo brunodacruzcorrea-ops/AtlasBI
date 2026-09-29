@@ -49,8 +49,8 @@ cd artifacts/api-server
 # inalcançável a partir da Cloudflare.
 pnpm exec wrangler secret put DATABASE_URL
 
-# Mesmo valor já usado no Railway. Se mudar, os tokens de sessão emitidos
-# antes deixam de validar (HMAC em src/routes/auth.ts).
+# Não assina mais as sessões (elas ficam no Postgres), mas o Worker ainda
+# repassa o valor ao container. Pode ser qualquer string.
 pnpm exec wrangler secret put SESSION_SECRET
 ```
 
@@ -136,13 +136,15 @@ rollback é só DNS.
 
 ## Riscos conhecidos
 
-- **Sessões em memória.** `tokenStore` em `src/routes/auth.ts` é um `Map` no
-  processo. `max_instances: 1` mantém uma instância só, mas **todo deploy da API
-  desloga todos os usuários**. Já era assim no Railway; a migração não piora,
-  mas também não resolve. Persistir sessão no Postgres é a correção real.
-- **Sem escala horizontal.** `max_instances: 1` é o que preserva o
-  comportamento de sessão acima. Subir esse número quebra o login até que as
-  sessões saiam da memória.
+- **Sessões no banco.** Ficam na tabela `sessions` do Postgres (só o hash do
+  token é gravado, validade de 30 dias). Deploy ou reinício da API **não**
+  desloga mais ninguém — a migração não faz o vendedor cair na tela de login.
+  Cada requisição autenticada faz uma consulta indexada a mais no banco, o que
+  soma à latência do item abaixo.
+- **Uma instância só, por causa do SSE.** `max_instances: 1` continua valendo:
+  as notificações de venda em tempo real (`/api/events/sales`) guardam as
+  conexões em memória do processo, então com várias instâncias só quem está
+  conectado na mesma instância recebe o aviso. O login já não depende disso.
 - **Latência do banco.** O container vai falar com o Postgres pelo proxy TCP
   público do Railway, não mais pela rede interna. Vale medir; se incomodar,
   Hyperdrive na frente ou mover o banco resolvem.

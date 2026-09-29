@@ -199,7 +199,7 @@ router.post(
       return;
     }
 
-    revokeSessionsForUser(id);
+    await revokeSessionsForUser(id);
 
     req.log.info({ targetUserId: id, byUserId: req.userId }, "Password reset");
 
@@ -226,6 +226,9 @@ router.delete("/users/:id", ensureAuth, ensureAdmin, async (req, res): Promise<v
     res.status(404).json({ error: "Usuário não encontrado" });
     return;
   }
+
+  // Sem isto o token do usuario removido seguiria valido ate vencer.
+  await revokeSessionsForUser(id);
 
   res.json({ success: true });
 });

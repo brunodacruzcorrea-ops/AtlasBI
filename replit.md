@@ -10,7 +10,7 @@ Dashboard comercial da NIADCON — centro de comando de vendas com ranking, meta
 - `pnpm run build` — typecheck + build
 - `pnpm --filter @workspace/api-spec run codegen` — regenerar hooks e schemas Zod a partir do spec OpenAPI
 - `pnpm --filter @workspace/db run push` — aplicar mudanças no schema do banco (dev only)
-- Required env: `DATABASE_URL` — string de conexão PostgreSQL; `SESSION_SECRET` — segredo para tokens de auth
+- Required env: `DATABASE_URL` — string de conexão PostgreSQL; `SESSION_SECRET` — não assina mais as sessões (agora são tokens aleatórios no banco); mantido só por compatibilidade
 - Optional env: `CRM_WEBHOOK_TOKEN` — liga o webhook de vendas do CRM (`POST /api/integrations/crm/sales`); `CRM_DEFAULT_SEGMENT` — segmento padrão dessas vendas. Ver `docs/integracao-crm.md`
 
 ## Credenciais padrão
@@ -47,7 +47,7 @@ Dashboard comercial da NIADCON — centro de comando de vendas com ranking, meta
 
 - Auth por token Bearer (localStorage `atlas_token`) + `setAuthTokenGetter` registrado na inicialização do app
 - Senhas com SHA-256 + salt estático (adequado para demo; produção deve usar bcrypt)
-- Tokens em memória no servidor (Map); produção deve usar Redis/DB sessions
+- Sessões no Postgres (tabela `sessions`, criada sob demanda): token aleatório, só o hash é gravado, validade de 30 dias renovada quando passa da metade. Sobrevivem a deploy e reinício
 - Dashboard summary/ranking/chart são endpoints dedicados agregados no servidor, nunca no cliente
 
 ## User preferences
@@ -58,4 +58,4 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 - Após qualquer mudança no `lib/api-spec/openapi.yaml`, rodar `pnpm --filter @workspace/api-spec run codegen` E depois `pnpm run typecheck:libs`
 - O servidor precisa de `DATABASE_URL` e `SESSION_SECRET` no ambiente
-- Tokens de auth ficam em memória; reiniciar o servidor faz todos os usuários precisarem logar novamente
+- Trocar a senha de um usuário ou removê-lo encerra as sessões dele (`revokeSessionsForUser`); qualquer novo fluxo que desative um acesso precisa chamar isso, porque as sessões duram 30 dias

@@ -8,9 +8,9 @@
   "observability": { "enabled": true },
 
   // Container roda a mesma imagem Docker do Express (ver Dockerfile).
-  // max_instances: 1 mantém uma única instância ativa, preservando o
-  // comportamento atual de sessão (o tokenStore em memória de routes/auth.ts
-  // só é perdido em deploy, não em ociosidade).
+  // max_instances: 1 mantém uma única instância ativa: o SSE de vendas
+  // (routes/sales-events.ts) guarda as conexões em memória do processo. As
+  // sessões de login ficam no Postgres e não dependem disso.
   //
   // ATENÇÃO: `containers` precisa de wrangler v4. Na v3 o deploy falha com
   // `"containers" should be an object, but got an array` — foi exatamente

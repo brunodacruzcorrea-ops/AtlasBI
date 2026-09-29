@@ -5,3 +5,4 @@ export * from "./goals";
 export * from "./segments";
 export * from "./crm-sale-links";
 export * from "./commissions";
+export * from "./sessions";
