@@ -10,6 +10,8 @@ import {
   Target,
   LogOut,
   UserCog,
+  Wallet,
+  SlidersHorizontal,
   Menu,
   X,
   Sparkles,
@@ -28,9 +30,11 @@ const NAV_ITEMS = [
   { href: "/consultants", label: "Consultores", icon: Users },
   { href: "/sales", label: "Vendas", icon: BarChart3 },
   { href: "/goals", label: "Metas", icon: Target },
+  { href: "/comissoes", label: "Minhas comissões", icon: Wallet },
 ];
 
 const ADMIN_NAV_ITEMS = [
+  { href: "/commission-rules", label: "Regras de comissão", icon: SlidersHorizontal },
   { href: "/users", label: "Usuários", icon: UserCog },
 ];
 

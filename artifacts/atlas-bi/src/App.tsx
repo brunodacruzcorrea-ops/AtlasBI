@@ -12,6 +12,8 @@ import Sales from './pages/sales';
 import Goals from './pages/goals';
 import UsersPage from './pages/users';
 import RootRedirect from './pages/index';
+import MinhasComissoes from './pages/minhas-comissoes';
+import CommissionRulesPage from './pages/commission-rules';
 const queryClient = new QueryClient();
 function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
   return (
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/consultants"><ProtectedRoute component={Consultants} /></Route>
       <Route path="/sales"><ProtectedRoute component={Sales} /></Route>
       <Route path="/goals"><ProtectedRoute component={Goals} /></Route>
+      <Route path="/comissoes" component={MinhasComissoes} />
+      <Route path="/commission-rules"><ProtectedRoute component={CommissionRulesPage} /></Route>
       <Route path="/users"><ProtectedRoute component={UsersPage} /></Route>
       <Route>
         <div className="min-h-screen flex items-center justify-center bg-background text-foreground">

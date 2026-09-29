@@ -23,7 +23,7 @@ export default function Login() {
         onSuccess: (data) => {
           localStorage.setItem("atlas_token", data.token);
           queryClient.invalidateQueries();
-          setLocation("/dashboard");
+          setLocation("/");
         },
         onError: (err: any) => {
           setErrorMsg(err.message || "Usuário ou senha inválidos");

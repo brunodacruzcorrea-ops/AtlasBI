@@ -8,6 +8,7 @@ import dashboardRouter from "./dashboard";
 import usersRouter from "./users";
 import salesEventsRouter from "./sales-events";
 import integrationsRouter from "./integrations";
+import commissionsRouter from "./commissions";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(dashboardRouter);
 router.use(usersRouter);
 router.use(salesEventsRouter);
 router.use(integrationsRouter);
+router.use(commissionsRouter);
 
 export default router;
