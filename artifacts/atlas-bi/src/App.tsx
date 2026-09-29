@@ -10,6 +10,7 @@ import Ranking from './pages/ranking';
 import Consultants from './pages/consultants';
 import Sales from './pages/sales';
 import Goals from './pages/goals';
+import Commissions from './pages/commissions';
 import UsersPage from './pages/users';
 import RootRedirect from './pages/index';
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/consultants"><ProtectedRoute component={Consultants} /></Route>
       <Route path="/sales"><ProtectedRoute component={Sales} /></Route>
       <Route path="/goals"><ProtectedRoute component={Goals} /></Route>
+      <Route path="/commissions"><ProtectedRoute component={Commissions} /></Route>
       <Route path="/users"><ProtectedRoute component={UsersPage} /></Route>
       <Route>
         <div className="min-h-screen flex items-center justify-center bg-background text-foreground">

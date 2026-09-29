@@ -76,6 +76,8 @@ export interface Sale {
   consultantName?: string | null;
   product: string;
   segment: string;
+  /** @nullable */
+  administrator?: string | null;
   amount: number;
   quantity: number;
   saleDate: string;
@@ -90,6 +92,7 @@ export interface SaleInput {
   product: string;
   /** @minLength 1 */
   segment: string;
+  administrator?: string;
   amount: number;
   quantity: number;
   saleDate: string;
@@ -100,10 +103,77 @@ export interface SaleUpdate {
   consultantId?: number;
   product?: string;
   segment?: string;
+  administrator?: string;
   amount?: number;
   quantity?: number;
   saleDate?: string;
   notes?: string;
+}
+
+export interface CommissionInstallment {
+  /** Percent of the sale amount paid in this installment */
+  percent: number;
+  /** Months after the sale month when it is paid (0 = same month) */
+  monthsAfterSale: number;
+}
+
+export interface CommissionRule {
+  id: number;
+  administrator: string;
+  product: string;
+  installments: CommissionInstallment[];
+}
+
+export interface CommissionRuleInput {
+  /** @minLength 1 */
+  administrator: string;
+  /** @minLength 1 */
+  product: string;
+  installments: CommissionInstallment[];
+}
+
+export interface CommissionForecastInstallment {
+  number: number;
+  totalInstallments: number;
+  /** Payment month, YYYY-MM */
+  dueMonth: string;
+  percent: number;
+  amount: number;
+}
+
+export interface CommissionForecastSale {
+  saleId: number;
+  consultantId: number;
+  /** @nullable */
+  consultantName?: string | null;
+  product: string;
+  /** @nullable */
+  administrator?: string | null;
+  amount: number;
+  saleDate: string;
+  hasRule: boolean;
+  totalCommission: number;
+  installments: CommissionForecastInstallment[];
+}
+
+export interface CommissionMonth {
+  /** YYYY-MM */
+  month: string;
+  amount: number;
+  installmentCount: number;
+}
+
+export interface CommissionForecast {
+  /**
+     * Consultant the forecast belongs to; null when it covers everyone (admin) or the user has no linked consultant
+     * @nullable
+     */
+  consultantId: number | null;
+  /** False when a non-admin user has no consultant registered with the same e-mail */
+  linked: boolean;
+  byMonth: CommissionMonth[];
+  sales: CommissionForecastSale[];
+  salesWithoutRule: number;
 }
 
 export interface Goal {
@@ -191,6 +261,13 @@ month?: number | null;
  * @nullable
  */
 year?: number | null;
+};
+
+export type GetCommissionForecastParams = {
+/**
+ * Only honored for admins; sellers always see their own commissions
+ */
+consultantId?: number;
 };
 
 export type ListGoalsParams = {

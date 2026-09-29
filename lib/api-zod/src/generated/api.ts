@@ -171,6 +171,7 @@ export const ListSalesResponseItem = zod.object({
   "consultantName": zod.string().nullish(),
   "product": zod.string(),
   "segment": zod.string(),
+  "administrator": zod.string().nullish(),
   "amount": zod.number(),
   "quantity": zod.number(),
   "saleDate": zod.coerce.date(),
@@ -191,6 +192,7 @@ export const CreateSaleBody = zod.object({
   "consultantId": zod.number(),
   "product": zod.string().min(1),
   "segment": zod.string().min(1),
+  "administrator": zod.string().optional(),
   "amount": zod.number(),
   "quantity": zod.number(),
   "saleDate": zod.coerce.date(),
@@ -203,6 +205,7 @@ export const CreateSaleResponse = zod.object({
   "consultantName": zod.string().nullish(),
   "product": zod.string(),
   "segment": zod.string(),
+  "administrator": zod.string().nullish(),
   "amount": zod.number(),
   "quantity": zod.number(),
   "saleDate": zod.coerce.date(),
@@ -224,6 +227,7 @@ export const GetSaleResponse = zod.object({
   "consultantName": zod.string().nullish(),
   "product": zod.string(),
   "segment": zod.string(),
+  "administrator": zod.string().nullish(),
   "amount": zod.number(),
   "quantity": zod.number(),
   "saleDate": zod.coerce.date(),
@@ -243,6 +247,7 @@ export const UpdateSaleBody = zod.object({
   "consultantId": zod.number().optional(),
   "product": zod.string().optional(),
   "segment": zod.string().optional(),
+  "administrator": zod.string().optional(),
   "amount": zod.number().optional(),
   "quantity": zod.number().optional(),
   "saleDate": zod.coerce.date().optional(),
@@ -255,6 +260,7 @@ export const UpdateSaleResponse = zod.object({
   "consultantName": zod.string().nullish(),
   "product": zod.string(),
   "segment": zod.string(),
+  "administrator": zod.string().nullish(),
   "amount": zod.number(),
   "quantity": zod.number(),
   "saleDate": zod.coerce.date(),
@@ -272,6 +278,128 @@ export const DeleteSaleParams = zod.object({
 
 export const DeleteSaleResponse = zod.object({
   "success": zod.boolean()
+})
+
+
+/**
+ * @summary List commission rules (administrator + product installment schedules)
+ */
+export const ListCommissionRulesResponseItem = zod.object({
+  "id": zod.number(),
+  "administrator": zod.string(),
+  "product": zod.string(),
+  "installments": zod.array(zod.object({
+  "percent": zod.number().describe('Percent of the sale amount paid in this installment'),
+  "monthsAfterSale": zod.number().describe('Months after the sale month when it is paid (0 = same month)')
+}))
+})
+export const ListCommissionRulesResponse = zod.array(ListCommissionRulesResponseItem)
+
+
+/**
+ * @summary Create a commission rule (admin only)
+ */
+
+
+
+
+export const CreateCommissionRuleBody = zod.object({
+  "administrator": zod.string().min(1),
+  "product": zod.string().min(1),
+  "installments": zod.array(zod.object({
+  "percent": zod.number().describe('Percent of the sale amount paid in this installment'),
+  "monthsAfterSale": zod.number().describe('Months after the sale month when it is paid (0 = same month)')
+}))
+})
+
+export const CreateCommissionRuleResponse = zod.object({
+  "id": zod.number(),
+  "administrator": zod.string(),
+  "product": zod.string(),
+  "installments": zod.array(zod.object({
+  "percent": zod.number().describe('Percent of the sale amount paid in this installment'),
+  "monthsAfterSale": zod.number().describe('Months after the sale month when it is paid (0 = same month)')
+}))
+})
+
+
+/**
+ * @summary Update a commission rule (admin only)
+ */
+export const UpdateCommissionRuleParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+export const UpdateCommissionRuleBody = zod.object({
+  "administrator": zod.string().min(1),
+  "product": zod.string().min(1),
+  "installments": zod.array(zod.object({
+  "percent": zod.number().describe('Percent of the sale amount paid in this installment'),
+  "monthsAfterSale": zod.number().describe('Months after the sale month when it is paid (0 = same month)')
+}))
+})
+
+export const UpdateCommissionRuleResponse = zod.object({
+  "id": zod.number(),
+  "administrator": zod.string(),
+  "product": zod.string(),
+  "installments": zod.array(zod.object({
+  "percent": zod.number().describe('Percent of the sale amount paid in this installment'),
+  "monthsAfterSale": zod.number().describe('Months after the sale month when it is paid (0 = same month)')
+}))
+})
+
+
+/**
+ * @summary Delete a commission rule (admin only)
+ */
+export const DeleteCommissionRuleParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteCommissionRuleResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Commission forecast for the logged-in seller (admins may pick a consultant)
+ */
+export const GetCommissionForecastQueryParams = zod.object({
+  "consultantId": zod.coerce.number().optional().describe('Only honored for admins; sellers always see their own commissions')
+})
+
+export const GetCommissionForecastResponse = zod.object({
+  "consultantId": zod.number().nullable().describe('Consultant the forecast belongs to; null when it covers everyone (admin) or the user has no linked consultant'),
+  "linked": zod.boolean().describe('False when a non-admin user has no consultant registered with the same e-mail'),
+  "byMonth": zod.array(zod.object({
+  "month": zod.string().describe('YYYY-MM'),
+  "amount": zod.number(),
+  "installmentCount": zod.number()
+})),
+  "sales": zod.array(zod.object({
+  "saleId": zod.number(),
+  "consultantId": zod.number(),
+  "consultantName": zod.string().nullish(),
+  "product": zod.string(),
+  "administrator": zod.string().nullish(),
+  "amount": zod.number(),
+  "saleDate": zod.coerce.date(),
+  "hasRule": zod.boolean(),
+  "totalCommission": zod.number(),
+  "installments": zod.array(zod.object({
+  "number": zod.number(),
+  "totalInstallments": zod.number(),
+  "dueMonth": zod.string().describe('Payment month, YYYY-MM'),
+  "percent": zod.number(),
+  "amount": zod.number()
+}))
+})),
+  "salesWithoutRule": zod.number()
 })
 
 

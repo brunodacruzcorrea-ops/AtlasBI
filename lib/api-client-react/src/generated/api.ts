@@ -21,11 +21,15 @@ import type {
 
 import type {
   AuthResponse,
+  CommissionForecast,
+  CommissionRule,
+  CommissionRuleInput,
   Consultant,
   ConsultantInput,
   ConsultantUpdate,
   DashboardSummary,
   ErrorResponse,
+  GetCommissionForecastParams,
   GetDashboardRankingParams,
   GetDashboardSummaryParams,
   GetProductionChartParams,
@@ -1102,6 +1106,378 @@ export const useDeleteSale = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getDeleteSaleMutationOptions(options));
     }
+
+export const getListCommissionRulesUrl = () => {
+
+
+
+
+  return `/api/commission-rules`
+}
+
+/**
+ * @summary List commission rules (administrator + product installment schedules)
+ */
+export const listCommissionRules = async ( options?: RequestInit): Promise<CommissionRule[]> => {
+
+  return customFetch<CommissionRule[]>(getListCommissionRulesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCommissionRulesQueryKey = () => {
+    return [
+    `/api/commission-rules`
+    ] as const;
+    }
+
+
+export const getListCommissionRulesQueryOptions = <TData = Awaited<ReturnType<typeof listCommissionRules>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommissionRules>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCommissionRulesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommissionRules>>> = ({ signal }) => listCommissionRules({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommissionRules>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCommissionRulesQueryResult = NonNullable<Awaited<ReturnType<typeof listCommissionRules>>>
+export type ListCommissionRulesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List commission rules (administrator + product installment schedules)
+ */
+
+export function useListCommissionRules<TData = Awaited<ReturnType<typeof listCommissionRules>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommissionRules>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCommissionRulesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateCommissionRuleUrl = () => {
+
+
+
+
+  return `/api/commission-rules`
+}
+
+/**
+ * @summary Create a commission rule (admin only)
+ */
+export const createCommissionRule = async (commissionRuleInput: CommissionRuleInput, options?: RequestInit): Promise<CommissionRule> => {
+
+  return customFetch<CommissionRule>(getCreateCommissionRuleUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(commissionRuleInput)
+  }
+);}
+
+
+
+
+export const getCreateCommissionRuleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommissionRule>>, TError,{data: BodyType<CommissionRuleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCommissionRule>>, TError,{data: BodyType<CommissionRuleInput>}, TContext> => {
+
+const mutationKey = ['createCommissionRule'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommissionRule>>, {data: BodyType<CommissionRuleInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCommissionRule(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCommissionRuleMutationResult = NonNullable<Awaited<ReturnType<typeof createCommissionRule>>>
+    export type CreateCommissionRuleMutationBody = BodyType<CommissionRuleInput>
+    export type CreateCommissionRuleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a commission rule (admin only)
+ */
+export const useCreateCommissionRule = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommissionRule>>, TError,{data: BodyType<CommissionRuleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCommissionRule>>,
+        TError,
+        {data: BodyType<CommissionRuleInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCommissionRuleMutationOptions(options));
+    }
+
+export const getUpdateCommissionRuleUrl = (id: number,) => {
+
+
+
+
+  return `/api/commission-rules/${id}`
+}
+
+/**
+ * @summary Update a commission rule (admin only)
+ */
+export const updateCommissionRule = async (id: number,
+    commissionRuleInput: CommissionRuleInput, options?: RequestInit): Promise<CommissionRule> => {
+
+  return customFetch<CommissionRule>(getUpdateCommissionRuleUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(commissionRuleInput)
+  }
+);}
+
+
+
+
+export const getUpdateCommissionRuleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommissionRule>>, TError,{id: number;data: BodyType<CommissionRuleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCommissionRule>>, TError,{id: number;data: BodyType<CommissionRuleInput>}, TContext> => {
+
+const mutationKey = ['updateCommissionRule'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCommissionRule>>, {id: number;data: BodyType<CommissionRuleInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateCommissionRule(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCommissionRuleMutationResult = NonNullable<Awaited<ReturnType<typeof updateCommissionRule>>>
+    export type UpdateCommissionRuleMutationBody = BodyType<CommissionRuleInput>
+    export type UpdateCommissionRuleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a commission rule (admin only)
+ */
+export const useUpdateCommissionRule = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommissionRule>>, TError,{id: number;data: BodyType<CommissionRuleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCommissionRule>>,
+        TError,
+        {id: number;data: BodyType<CommissionRuleInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateCommissionRuleMutationOptions(options));
+    }
+
+export const getDeleteCommissionRuleUrl = (id: number,) => {
+
+
+
+
+  return `/api/commission-rules/${id}`
+}
+
+/**
+ * @summary Delete a commission rule (admin only)
+ */
+export const deleteCommissionRule = async (id: number, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getDeleteCommissionRuleUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteCommissionRuleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionRule>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionRule>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteCommissionRule'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCommissionRule>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteCommissionRule(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCommissionRuleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCommissionRule>>>
+
+    export type DeleteCommissionRuleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a commission rule (admin only)
+ */
+export const useDeleteCommissionRule = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionRule>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCommissionRule>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteCommissionRuleMutationOptions(options));
+    }
+
+export const getGetCommissionForecastUrl = (params?: GetCommissionForecastParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/commissions/forecast?${stringifiedParams}` : `/api/commissions/forecast`
+}
+
+/**
+ * @summary Commission forecast for the logged-in seller (admins may pick a consultant)
+ */
+export const getCommissionForecast = async (params?: GetCommissionForecastParams, options?: RequestInit): Promise<CommissionForecast> => {
+
+  return customFetch<CommissionForecast>(getGetCommissionForecastUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCommissionForecastQueryKey = (params?: GetCommissionForecastParams,) => {
+    return [
+    `/api/commissions/forecast`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetCommissionForecastQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionForecast>>, TError = ErrorType<unknown>>(params?: GetCommissionForecastParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommissionForecast>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCommissionForecastQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionForecast>>> = ({ signal }) => getCommissionForecast(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionForecast>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCommissionForecastQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionForecast>>>
+export type GetCommissionForecastQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Commission forecast for the logged-in seller (admins may pick a consultant)
+ */
+
+export function useGetCommissionForecast<TData = Awaited<ReturnType<typeof getCommissionForecast>>, TError = ErrorType<unknown>>(
+ params?: GetCommissionForecastParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommissionForecast>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCommissionForecastQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListGoalsUrl = (params?: ListGoalsParams,) => {
   const normalizedParams = new URLSearchParams();

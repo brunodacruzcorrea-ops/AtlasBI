@@ -85,6 +85,7 @@ const saleSchema = z.object({
   consultantId: z.coerce.number().min(1, "Consultor é obrigatório"),
   product: z.string().min(1, "Nome do produto é obrigatório"),
   segment: z.string().min(1, "Segmento é obrigatório"),
+  administrator: z.string().optional(),
   amount: z.coerce.number().min(0.01, "Valor deve ser maior que zero"),
   quantity: z.coerce.number().min(1, "Quantidade deve ser ao menos 1"),
   saleDate: z.string().min(1, "Data é obrigatória"),
@@ -143,6 +144,7 @@ export default function Sales() {
       consultantId: 0,
       product: "",
       segment: "",
+      administrator: "",
       amount: 0,
       quantity: 1,
       saleDate: toLocalDateInput(),
@@ -237,6 +239,7 @@ export default function Sales() {
       consultantId: sale.consultantId,
       product: sale.product,
       segment: sale.segment,
+      administrator: sale.administrator || "",
       amount: sale.amount,
       quantity: sale.quantity,
       saleDate: toLocalDateInput(sale.saleDate),
@@ -274,6 +277,7 @@ export default function Sales() {
       consultantId: 0,
       product: "",
       segment: "",
+      administrator: "",
       amount: 0,
       quantity: 1,
       saleDate: toLocalDateInput(),
@@ -396,6 +400,27 @@ export default function Sales() {
                         <Input
                           placeholder="Empresarial"
                           {...field}
+                          className="bg-muted/50 focus-visible:ring-primary"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="administrator"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase text-muted-foreground">
+                        Administradora
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex.: Embracon"
+                          {...field}
+                          value={field.value ?? ""}
                           className="bg-muted/50 focus-visible:ring-primary"
                         />
                       </FormControl>

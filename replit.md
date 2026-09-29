@@ -37,6 +37,12 @@ Dashboard comercial da NIADCON — centro de comando de vendas com ranking, meta
 - `lib/api-spec/openapi.yaml` — especificação OpenAPI (source of truth)
 - `lib/db/src/schema/` — schema Drizzle (users, consultants, sales, goals)
 
+## Comissões
+
+- Vendas têm `administrator` (texto livre, comparado sem caixa/acento). Cada par administradora + produto tem uma regra em `commission_rules` com as parcelas (`percent` da venda e `monthsAfterSale`). Admin cadastra em `/commissions`.
+- `GET /api/commissions/forecast` calcula no servidor; vendedor só recebe as próprias comissões (vínculo por e-mail, como nas metas). Cálculo em `artifacts/api-server/src/lib/commission.ts`.
+- Após atualizar, rodar `pnpm --filter db push` (nova tabela e coluna).
+
 ## Cores da marca
 
 - Azul escuro: #0A1F44 (sidebar, fundo principal)

@@ -5,16 +5,12 @@
  * ATLAS BI - Commercial Dashboard API for NIADCON
  * OpenAPI spec version: 0.1.0
  */
+import type { CommissionInstallment } from './commissionInstallment';
 
-export interface SaleInput {
-  consultantId: number;
+export interface CommissionRuleInput {
+  /** @minLength 1 */
+  administrator: string;
   /** @minLength 1 */
   product: string;
-  /** @minLength 1 */
-  segment: string;
-  administrator?: string;
-  amount: number;
-  quantity: number;
-  saleDate: Date;
-  notes?: string;
+  installments: CommissionInstallment[];
 }

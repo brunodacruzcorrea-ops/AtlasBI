@@ -18,6 +18,8 @@ tags:
     description: Sales management
   - name: goals
     description: Commercial goals management
+  - name: commissions
+    description: Commission rules and seller commission forecast
   - name: dashboard
     description: Dashboard aggregates and rankings
 paths:
@@ -292,6 +294,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
+
+  /commission-rules:
+    get:
+      operationId: listCommissionRules
+      tags: [commissions]
+      summary: List commission rules (administrator + product installment schedules)
+      responses:
+        "200":
+          description: List of rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommissionRule"
+    post:
+      operationId: createCommissionRule
+      tags: [commissions]
+      summary: Create a commission rule (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommissionRuleInput"
+      responses:
+        "201":
+          description: Rule created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionRule"
+  /commission-rules/{id}:
+    patch:
+      operationId: updateCommissionRule
+      tags: [commissions]
+      summary: Update a commission rule (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommissionRuleInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionRule"
+    delete:
+      operationId: deleteCommissionRule
+      tags: [commissions]
+      summary: Delete a commission rule (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /commissions/forecast:
+    get:
+      operationId: getCommissionForecast
+      tags: [commissions]
+      summary: Commission forecast for the logged-in seller (admins may pick a consultant)
+      parameters:
+        - name: consultantId
+          in: query
+          required: false
+          description: Only honored for admins; sellers always see their own commissions
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Forecast
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionForecast"
 
   /goals:
     get:
@@ -589,6 +683,8 @@ components:
           type: string
         segment:
           type: string
+        administrator:
+          type: ["string", "null"]
         amount:
           type: number
         quantity:
@@ -622,6 +718,8 @@ components:
         segment:
           type: string
           minLength: 1
+        administrator:
+          type: string
         amount:
           type: number
         quantity:
@@ -648,6 +746,8 @@ components:
           type: string
         segment:
           type: string
+        administrator:
+          type: string
         amount:
           type: number
         quantity:
@@ -657,6 +757,154 @@ components:
           format: date
         notes:
           type: string
+
+    CommissionInstallment:
+      type: object
+      properties:
+        percent:
+          type: number
+          description: Percent of the sale amount paid in this installment
+        monthsAfterSale:
+          type: integer
+          description: Months after the sale month when it is paid (0 = same month)
+      required:
+        - percent
+        - monthsAfterSale
+
+    CommissionRule:
+      type: object
+      properties:
+        id:
+          type: integer
+        administrator:
+          type: string
+        product:
+          type: string
+        installments:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionInstallment"
+      required:
+        - id
+        - administrator
+        - product
+        - installments
+
+    CommissionRuleInput:
+      type: object
+      properties:
+        administrator:
+          type: string
+          minLength: 1
+        product:
+          type: string
+          minLength: 1
+        installments:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionInstallment"
+      required:
+        - administrator
+        - product
+        - installments
+
+    CommissionForecastInstallment:
+      type: object
+      properties:
+        number:
+          type: integer
+        totalInstallments:
+          type: integer
+        dueMonth:
+          type: string
+          description: Payment month, YYYY-MM
+        percent:
+          type: number
+        amount:
+          type: number
+      required:
+        - number
+        - totalInstallments
+        - dueMonth
+        - percent
+        - amount
+
+    CommissionForecastSale:
+      type: object
+      properties:
+        saleId:
+          type: integer
+        consultantId:
+          type: integer
+        consultantName:
+          type: ["string", "null"]
+        product:
+          type: string
+        administrator:
+          type: ["string", "null"]
+        amount:
+          type: number
+        saleDate:
+          type: string
+          format: date
+        hasRule:
+          type: boolean
+        totalCommission:
+          type: number
+        installments:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionForecastInstallment"
+      required:
+        - saleId
+        - consultantId
+        - product
+        - amount
+        - saleDate
+        - hasRule
+        - totalCommission
+        - installments
+
+    CommissionMonth:
+      type: object
+      properties:
+        month:
+          type: string
+          description: YYYY-MM
+        amount:
+          type: number
+        installmentCount:
+          type: integer
+      required:
+        - month
+        - amount
+        - installmentCount
+
+    CommissionForecast:
+      type: object
+      properties:
+        consultantId:
+          type: ["integer", "null"]
+          description: Consultant the forecast belongs to; null when it covers everyone (admin) or the user has no linked consultant
+        linked:
+          type: boolean
+          description: False when a non-admin user has no consultant registered with the same e-mail
+        byMonth:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionMonth"
+        sales:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionForecastSale"
+        salesWithoutRule:
+          type: integer
+      required:
+        - consultantId
+        - linked
+        - byMonth
+        - sales
+        - salesWithoutRule
 
     Goal:
       type: object

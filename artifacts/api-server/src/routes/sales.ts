@@ -26,6 +26,7 @@ function mapSale(s: any, consultantName?: string | null) {
     consultantName: consultantName ?? null,
     product: s.product,
     segment: s.segment,
+    administrator: s.administrator ?? null,
     amount: parseFloat(s.amount),
     quantity: s.quantity,
     saleDate: s.saleDate,
@@ -94,6 +95,7 @@ router.post("/sales", ensureAuth, async (req, res): Promise<void> => {
       consultantId: parsed.data.consultantId,
       product: parsed.data.product,
       segment: parsed.data.segment,
+      administrator: parsed.data.administrator?.trim() || null,
       amount: String(parsed.data.amount),
       quantity: parsed.data.quantity,
       saleDate: toDatabaseDate(parsed.data.saleDate),
@@ -159,6 +161,8 @@ router.patch("/sales/:id", ensureAuth, ensureAdmin, async (req, res): Promise<vo
     updateData.product = parsed.data.product;
   if (parsed.data.segment !== undefined)
     updateData.segment = parsed.data.segment;
+  if (parsed.data.administrator !== undefined)
+    updateData.administrator = parsed.data.administrator.trim() || null;
   if (parsed.data.amount !== undefined)
     updateData.amount = String(parsed.data.amount);
   if (parsed.data.quantity !== undefined)

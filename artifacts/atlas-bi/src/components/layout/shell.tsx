@@ -8,6 +8,7 @@ import {
   Users,
   BarChart3,
   Target,
+  Wallet,
   LogOut,
   UserCog,
   Menu,
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { href: "/consultants", label: "Consultores", icon: Users },
   { href: "/sales", label: "Vendas", icon: BarChart3 },
   { href: "/goals", label: "Metas", icon: Target },
+  { href: "/commissions", label: "Comissões", icon: Wallet },
 ];
 
 const ADMIN_NAV_ITEMS = [

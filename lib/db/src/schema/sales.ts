@@ -7,6 +7,9 @@ export const salesTable = pgTable("sales", {
   consultantId: integer("consultant_id").notNull(),
   product: text("product").notNull(),
   segment: text("segment").notNull(),
+  // Administradora do consórcio vendido; junto com o produto define a regra de
+  // comissão. Nula em vendas antigas e nas que chegam do CRM sem essa informação.
+  administrator: text("administrator"),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   quantity: integer("quantity").notNull().default(1),
   saleDate: date("sale_date", { mode: "string" }).notNull(),

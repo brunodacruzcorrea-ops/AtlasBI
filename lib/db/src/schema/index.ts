@@ -4,3 +4,4 @@ export * from "./sales";
 export * from "./goals";
 export * from "./segments";
 export * from "./crm-sale-links";
+export * from "./commission-rules";
