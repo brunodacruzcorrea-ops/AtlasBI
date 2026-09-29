@@ -188,18 +188,22 @@ router.post(
       return;
     }
 
-    const [updated] = await db
-      .update(usersTable)
-      .set({ passwordHash: hashPassword(password) })
-      .where(eq(usersTable.id, id))
-      .returning();
+    // Senha e revogacao na mesma transacao: se apagar as sessoes falhar, a
+    // senha nao muda, em vez de ficar trocada com os tokens antigos valendo.
+    const updated = await db.transaction(async (tx) => {
+      const [row] = await tx
+        .update(usersTable)
+        .set({ passwordHash: hashPassword(password) })
+        .where(eq(usersTable.id, id))
+        .returning();
+      if (row) await revokeSessionsForUser(id, tx);
+      return row;
+    });
 
     if (!updated) {
       res.status(404).json({ error: "Usuário não encontrado" });
       return;
     }
-
-    revokeSessionsForUser(id);
 
     req.log.info({ targetUserId: id, byUserId: req.userId }, "Password reset");
 
@@ -220,7 +224,13 @@ router.delete("/users/:id", ensureAuth, ensureAdmin, async (req, res): Promise<v
     return;
   }
 
-  const [deleted] = await db.delete(usersTable).where(eq(usersTable.id, id)).returning();
+  // Sem revogar, o token do usuario removido seguiria valido ate vencer; na
+  // mesma transacao para a exclusao nao confirmar sem a revogacao.
+  const deleted = await db.transaction(async (tx) => {
+    const [row] = await tx.delete(usersTable).where(eq(usersTable.id, id)).returning();
+    if (row) await revokeSessionsForUser(id, tx);
+    return row;
+  });
 
   if (!deleted) {
     res.status(404).json({ error: "Usuário não encontrado" });

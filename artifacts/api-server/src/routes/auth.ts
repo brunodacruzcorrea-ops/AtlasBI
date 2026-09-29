@@ -5,6 +5,13 @@ import { LoginBody, LoginResponse, GetMeResponse } from "@workspace/api-zod";
 import { logger } from "../lib/logger";
 import crypto from "crypto";
 import { normalizeEmail, selectUserForLogin } from "../lib/users";
+import {
+  createSession,
+  deleteSession,
+  deleteSessionsForUser,
+  getSessionUserId,
+  type SessionExecutor,
+} from "../lib/session-store";
 import type { Viewer } from "../lib/visibility";
 
 const router: IRouter = Router();
@@ -13,32 +20,27 @@ function hashPassword(password: string): string {
   return crypto.createHash("sha256").update(password + "atlas_bi_salt_2024").digest("hex");
 }
 
-function generateToken(userId: number): string {
-  return crypto
-    .createHmac("sha256", process.env["SESSION_SECRET"] ?? "atlas_bi_secret")
-    .update(`${userId}:${Date.now()}`)
-    .digest("hex");
-}
-
-// Simple in-memory token store (production would use Redis/DB sessions)
-const tokenStore = new Map<string, number>(); // token -> userId
-
 // Teto defensivo na busca por e-mail no login: o esperado e 1 registro, 2
 // quando existe a duplicata legada de caixa. Um numero maior significa base
 // suja, e nao deve virar uma varredura grande dentro do login.
 const MAX_LOGIN_CANDIDATES = 10;
 
-export function getUserIdFromToken(token: string): number | null {
-  return tokenStore.get(token) ?? null;
+export function getUserIdFromToken(token: string): Promise<number | null> {
+  return getSessionUserId(token);
 }
 
-// Usado na redefinicao de senha: sem isso as sessoes abertas com a senha
-// antiga continuariam validas, que e justamente o que uma redefinicao
-// precisa encerrar.
-export function revokeSessionsForUser(userId: number): void {
-  for (const [token, id] of tokenStore) {
-    if (id === userId) tokenStore.delete(token);
-  }
+// Usado na redefinicao de senha e na exclusao de usuario: sem isso as sessoes
+// abertas continuariam validas, que e justamente o que essas operacoes
+// precisam encerrar. Agora as sessoes vivem no banco e sobrevivem a deploys,
+// entao esquecer de chamar isto deixaria um acesso aberto por ate 30 dias.
+//
+// Chame dentro da mesma transacao que muda a conta (passe `executor`), para a
+// revogacao nao poder falhar depois de a senha ja ter mudado.
+export function revokeSessionsForUser(
+  userId: number,
+  executor?: SessionExecutor,
+): Promise<void> {
+  return deleteSessionsForUser(userId, executor);
 }
 
 router.post("/auth/login", async (req, res): Promise<void> => {
@@ -93,8 +95,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const token = generateToken(user.id);
-  tokenStore.set(token, user.id);
+  const token = await createSession(user.id);
 
   req.log.info({ userId: user.id }, "User logged in");
 
@@ -114,8 +115,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 router.post("/auth/logout", async (req, res): Promise<void> => {
   const authHeader = req.headers["authorization"];
   if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    tokenStore.delete(token);
+    await deleteSession(authHeader.slice(7));
   }
   res.json({ success: true });
 });
@@ -127,8 +127,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
     return;
   }
 
-  const token = authHeader.slice(7);
-  const userId = tokenStore.get(token);
+  const userId = await getSessionUserId(authHeader.slice(7));
 
   if (!userId) {
     res.status(401).json({ error: "Token inválido ou expirado" });
@@ -156,14 +155,13 @@ router.get("/auth/me", async (req, res): Promise<void> => {
   );
 });
 
-export function ensureAuth(req: any, res: any, next: any): void {
+export async function ensureAuth(req: any, res: any, next: any): Promise<void> {
   const authHeader = req.headers["authorization"];
   if (!authHeader?.startsWith("Bearer ")) {
     res.status(401).json({ error: "Não autenticado" });
     return;
   }
-  const token = authHeader.slice(7);
-  const userId = tokenStore.get(token);
+  const userId = await getSessionUserId(authHeader.slice(7));
   if (!userId) {
     res.status(401).json({ error: "Token inválido" });
     return;

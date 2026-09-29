@@ -10,8 +10,9 @@ interface Env {
 
 export class ApiServerContainer extends Container<Env> {
   defaultPort = 8080;
-  // Sem sleepAfter curto: o container permanece sempre ativo (decisão de
-  // produto para não invalidar o tokenStore em memória por ociosidade).
+  // Sem sleepAfter curto: o container permanece sempre ativo. As sessões já
+  // vivem no Postgres, então dormir não desloga ninguém; o motivo agora é o SSE
+  // de vendas (conexões em memória) e evitar a latência de partida a frio.
 
   // Encaminha os secrets do Worker (wrangler secret put DATABASE_URL /
   // SESSION_SECRET) para o processo do container — @workspace/db lança erro
